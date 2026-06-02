@@ -7,7 +7,6 @@ linters:
     - staticcheck
     - gofmt
     - ineffassign
-    - deadcode
     - unused
 
 issues:

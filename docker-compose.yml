@@ -1,0 +1,15 @@
+services:
+  # Tu aplicación híbrida (Go + Frontend) usando el Dockerfile
+  finflow-app:
+    build:
+      context: .          # Mira en la carpeta actual
+      dockerfile: Dockerfile  # Usa el Dockerfile que optimizamos antes
+    ports:
+      - "8080:8080"       # Abre el puerto 8080 para que entres desde tu navegador
+    environment:
+      - DB_PATH=/app/data/finflow.db  # Le indicamos a Go dónde crear la base de datos
+    volumes:
+      - finflow_data:/app/data        # <-- LA MAGIA: Esto hace que los datos no se borren
+
+volumes:
+  finflow_data: # Docker creará una carpeta segura en tu PC para guardar el archivo .db

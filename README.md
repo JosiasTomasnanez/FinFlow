@@ -16,7 +16,15 @@ Our revenue model relies primarily on transaction commissions from merchants, pr
 
 ---
 
-## ⚙️ 3. Processes & DevOps Pipeline
+## 3. Tecnologías utilizadas
+### 3.1 Desarrollo
+Se utilizan los siguientes lenguajes y frameworks:
+* Lenguajes: Go (backend) y JavaScript (frontend)
+* Frameworks: Gin Gonic y React
+
+---
+
+## ⚙️ 4. Processes & DevOps Pipeline
 
 ### 🔄 Branching Strategy (GitHub Flow) & Repository Policies
 To balance startup speed with fintech compliance, the repository strictly follows **GitHub Flow**:
@@ -54,3 +62,47 @@ To guarantee financial platform reliability, we actively manage system health th
 1. **Service Level Indicators (SLI):** We measure service availability, latency thresholds, error rates, transaction processing speeds, and deployment success rates.
 2. **Service Level Objectives (SLO):** Target benchmarks, including a strict 99.9% monthly availability objective and an error rate cap below 1%.
 3. **Error Budget:** The ultimate decision-making tool. If the error budget is depleted, the team halts new feature deployments to focus 100% on system stabilization and technical debt reduction.
+---
+
+## 📦 Proyecto Go + React para DevOps
+Este repositorio ahora incluye un proyecto FinFlow con:
+
+- Backend en Go usando Gin Gonic
+- Frontend en React con Vite
+- API REST mínima en `cmd/finflow/main.go`
+- Endpoints para `wallets` y `payments` accesibles en `/api/*`
+- Lógica de negocio con un servicio de wallet y transferencia
+- Almacenamiento en memoria para pruebas rápidas
+- Pruebas unitarias en `internal/service/wallet_test.go`
+- Pipeline básico en `.github/workflows/build.yml`
+- Configuración de `sonar-project.properties` para SonarQube/SonarCloud
+- Linter con `.golangci.yml`
+- `Dockerfile` y `Makefile` para build, test y lint
+
+### Comandos útiles
+- `go test ./...`
+- `make build`
+- `make lint`
+- `make docker`
+- `make frontend-build`
+- `make run`
+
+### Iniciar la aplicación localmente
+1. `cd frontend && npm install`
+2. `cd frontend && npm run build`
+3. `go build ./cmd/finflow`
+4. `./finflow`
+5. Abrir `http://localhost:8080/`
+
+También podés ejecutar sólo el frontend en modo desarrollo:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Interfaz web
+La aplicación ahora sirve una UI React construida con Vite.
+- Abrí `http://localhost:8080/` en el navegador.
+- Podés crear wallets, listar wallets y realizar pagos desde la pantalla.
+- La UI usa los endpoints REST bajo `/api/*` en segundo plano.

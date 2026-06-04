@@ -17,14 +17,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 🚀 CAMBIO CLAVE: Subimos a Go 1.25 para que compile SQLite y Unleash
+      # 🚀 Subimos a Go 1.25 para que compile SQLite y Unleash sin quejas
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.25'
           cache: true 
 
-      # Configuración limpia de la toolchain para evitar timeouts en GitHub
+      # Configuración limpia de la toolchain para evitar trabas en GitHub
       - name: Configure Go Environment
         run: go env -w GOTOOLCHAIN=auto
 
@@ -34,10 +34,13 @@ jobs:
       - name: Run Go tests
         run: go test ./...
 
+      # 🛠️ CORRECCIÓN AQUÍ: Forzamos compatibilidad real con Go 1.25
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          version: v1.64
+          skip-pkg-cache: true
+          skip-build-cache: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

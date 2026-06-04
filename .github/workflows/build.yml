@@ -17,7 +17,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 🚀 Forzamos Go 1.25 para compatibilidad con SQLite y Unleash
+      # 🚀 Subimos a Go 1.25 para que compile SQLite y Unleash sin quejas
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -34,10 +34,10 @@ jobs:
       - name: Run Go tests
         run: go test ./...
 
-      # 🛠️ INSTALACIÓN NATIVA: Evita los problemas de compatibilidad de la acción oficial
+      # 🛠️ COMPILACIÓN EN CALIENTE: Forzamos a que el linter nazca desde Go 1.25
       - name: Run golangci-lint
         run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.64.5
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.5
           $(go env GOPATH)/bin/golangci-lint run --timeout=5m
 
       - name: Set up Node.js

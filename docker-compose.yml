@@ -1,15 +1,57 @@
+version: '3.8'
+
 services:
-  # Tu aplicación híbrida (Go + Frontend) usando el Dockerfile
   finflow-app:
     build:
-      context: .          # Mira en la carpeta actual
-      dockerfile: Dockerfile  # Usa el Dockerfile que optimizamos antes
+      context: .          
+      dockerfile: Dockerfile  
     ports:
-      - "8080:8080"       # Abre el puerto 8080 para que entres desde tu navegador
+      - "8080:8080"       
     environment:
-      - DB_PATH=/app/data/finflow.db  # Le indicamos a Go dónde crear la base de datos
+      - DB_PATH=${DB_PATH}  
+      - UNLEASH_URL=http://unleash-web:4242/api/
+      - UNLEASH_TOKEN=${UNLEASH_SECRET_TOKEN}
+      - UNLEASH_APP_NAME=${UNLEASH_APP_NAME}
     volumes:
-      - finflow_data:/app/data        # <-- LA MAGIA: Esto hace que los datos no se borren
+      - finflow_data:/app/data  
+    depends_on:
+      - unleash-web
+    networks:
+      - finflow-net
 
+  # Base de datos EXCLUSIVA para el motor de Feature Flags
+  unleash-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${UNLEASH_DB_NAME}
+      POSTGRES_USER: ${UNLEASH_DB_USER}
+      POSTGRES_PASSWORD: ${UNLEASH_DB_PASSWORD}
+    volumes:
+      - unleash_db_data:/var/lib/postgresql/data
+    networks:
+      - finflow-net
+
+  # 🖥️ Servidor de Unleash (Interfaz Gráfica / Dashboard Web)
+  unleash-web:
+    image: unleashorg/unleash-server:latest
+    ports:
+      - "4242:4242" 
+    environment:
+      # Construcción dinámica de la URL de conexión a la base de datos
+      DATABASE_URL: postgres://${UNLEASH_DB_USER}:${UNLEASH_DB_PASSWORD}@unleash-db:5432/${UNLEASH_DB_NAME}
+      DATABASE_SSL: "false"
+      INIT_ADMIN_API_TOKENS: ${UNLEASH_SECRET_TOKEN}
+    depends_on:
+      - unleash-db
+    networks:
+      - finflow-net
+
+# Declaración de Volúmenes para Persistencia de Datos
 volumes:
-  finflow_data: # Docker creará una carpeta segura en tu PC para guardar el archivo .db
+  finflow_data:      # Mantiene tu archivo finflow.db a salvo
+  unleash_db_data:   # Mantiene tus Feature Flags configuradas a salvo
+
+# Aislamiento de Redes
+networks:
+  finflow-net:       
+    driver: bridge

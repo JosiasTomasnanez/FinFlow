@@ -26,8 +26,9 @@ func main() {
 	}
 	defer func() { _ = sqliteStore.Close() }()
 
-	service := service.NewWalletService(sqliteStore)
-	server := api.NewServer(service)
+	walletService := service.NewWalletService(sqliteStore)
+	authService := service.NewAuthService()
+	server := api.NewServer(walletService, authService)
 
 	log.Printf("starting FinFlow API on http://0.0.0.0:8080 using DB %s", dbPath)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -45,12 +46,17 @@ func loadEnvFile() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		if strings.HasPrefix(line, "DB_PATH=") {
-			value := strings.TrimPrefix(line, "DB_PATH=")
-			if value != "" {
-				_ = os.Setenv("DB_PATH", value)
-			}
-			return
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+		if key != "" && value != "" {
+			_ = os.Setenv(key, value)
 		}
 	}
 }

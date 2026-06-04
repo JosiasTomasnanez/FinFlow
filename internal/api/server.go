@@ -8,15 +8,17 @@ import (
 )
 
 // NewServer returns a configured HTTP server for the FinFlow API.
-func NewServer(service *service.WalletService) *http.Server {
+func NewServer(walletService *service.WalletService, authService *service.AuthService) *http.Server {
 	router := gin.Default()
 
 	apiGroup := router.Group("/api")
 	apiGroup.GET("/health", healthHandler)
-	apiGroup.GET("/wallets", walletListHandler(service))
-	apiGroup.POST("/wallets", walletCreateHandler(service))
-	apiGroup.GET("/wallets/:walletID", walletDetailHandler(service))
-	apiGroup.POST("/payments", paymentHandler(service))
+	apiGroup.GET("/wallets", walletListHandler(walletService))
+	apiGroup.POST("/wallets", walletCreateHandler(walletService))
+	apiGroup.GET("/wallets/:walletID", walletDetailHandler(walletService))
+	apiGroup.POST("/payments", paymentHandler(walletService))
+	apiGroup.POST("/login", authLoginHandler(authService))
+	apiGroup.GET("/flags", flagStatusHandler())
 
 	router.Static("/assets", "./frontend/dist/assets")
 	router.StaticFile("/", "./frontend/dist/index.html")

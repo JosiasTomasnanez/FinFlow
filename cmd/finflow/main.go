@@ -24,7 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to initialize sqlite store: %v", err)
 	}
-	defer sqliteStore.Close()
+	defer func() { _ = sqliteStore.Close() }()
 
 	service := service.NewWalletService(sqliteStore)
 	server := api.NewServer(service)
@@ -40,15 +40,15 @@ func loadEnvFile() {
 	if err != nil {
 		return
 	}
-	defer file.Close()
 
+	defer func() { _ = file.Close() }()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if strings.HasPrefix(line, "DB_PATH=") {
 			value := strings.TrimPrefix(line, "DB_PATH=")
 			if value != "" {
-				os.Setenv("DB_PATH", value)
+				_ = os.Setenv("DB_PATH", value)
 			}
 			return
 		}

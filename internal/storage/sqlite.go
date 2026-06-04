@@ -12,7 +12,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-// SQLiteStore stores wallet data in a SQLite database.
 type SQLiteStore struct {
 	db *sql.DB
 }
@@ -33,17 +32,17 @@ func NewSQLiteStore(dbPath string) (*SQLiteStore, error) {
 	}
 
 	if err := db.Ping(); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("ping sqlite db: %w", err)
 	}
 
 	createTable := `CREATE TABLE IF NOT EXISTS wallets (
-		id TEXT PRIMARY KEY,
-		owner TEXT NOT NULL,
-		balance INTEGER NOT NULL
-	);`
+        id TEXT PRIMARY KEY,
+        owner TEXT NOT NULL,
+        balance INTEGER NOT NULL
+    );`
 	if _, err := db.Exec(createTable); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, fmt.Errorf("create wallets table: %w", err)
 	}
 
@@ -59,7 +58,7 @@ func (s *SQLiteStore) ListWallets() []model.Wallet {
 	if err != nil {
 		return nil
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	wallets := make([]model.Wallet, 0)
 	for rows.Next() {

@@ -13,21 +13,10 @@ jobs:
     name: SonarQube Scan
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      # 🚀 ACTUALIZACIÓN: Usamos la versión oficial y moderna de la acción
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        # 🛠️ PARÁMETROS CLAVE: Configuramos Sonar de forma profesional
-        with:
-          args: >
-            -Dsonar.projectKey=finflow
-            -Dsonar.sources=.
-            -Dsonar.exclusions=**/vendor/**,**/*.js,**/dist/**,frontend/node_modules/**
-            -Dsonar.tests=.
-            -Dsonar.test.inclusions=**/*_test.go,frontend/**/*.test.js

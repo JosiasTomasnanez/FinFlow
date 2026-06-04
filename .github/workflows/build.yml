@@ -17,12 +17,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      
+      # 🚀 CAMBIO CLAVE: Subimos a Go 1.25 para que compile SQLite y Unleash
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
           cache: true 
+
+      # Configuración limpia de la toolchain para evitar timeouts en GitHub
+      - name: Configure Go Environment
+        run: go env -w GOTOOLCHAIN=auto
 
       - name: Run gofmt check
         run: gofmt -l $(find . -name '*.go' -not -path './vendor/*')

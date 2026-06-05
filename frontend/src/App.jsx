@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import Login from './Login'
 
+const BASE_URL = import.meta.env.VITE_API_URL || ''
+
 const apiFetch = async (path, options = {}) => {
-  const response = await fetch(path, options)
+  const response = await fetch(`${BASE_URL}${path}`, options)
   const data = await response.json().catch(() => null)
   if (!response.ok) {
     throw new Error(data?.error || response.statusText)

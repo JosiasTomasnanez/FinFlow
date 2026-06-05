@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
+import Login from './Login'
+
+const BASE_URL = import.meta.env.VITE_API_URL || ''
 
 const apiFetch = async (path, options = {}) => {
-  const response = await fetch(path, options)
+  const response = await fetch(`${BASE_URL}${path}`, options)
   const data = await response.json().catch(() => null)
   if (!response.ok) {
     throw new Error(data?.error || response.statusText)
@@ -16,6 +19,17 @@ function App() {
   const [createResult, setCreateResult] = useState('')
   const [payment, setPayment] = useState({ from_wallet_id: '', to_wallet_id: '', amount: 100 })
   const [paymentResult, setPaymentResult] = useState('')
+  const [featureEnabled, setFeatureEnabled] = useState(false)
+  const [user, setUser] = useState(null)
+
+  const loadFeatures = async () => {
+    try {
+      const data = await apiFetch('/api/flags')
+      setFeatureEnabled(Boolean(data.feature_login))
+    } catch (error) {
+      setFeatureEnabled(false)
+    }
+  }
 
   const loadWallets = async () => {
     try {
@@ -28,6 +42,7 @@ function App() {
   }
 
   useEffect(() => {
+    loadFeatures()
     loadWallets()
   }, [])
 
@@ -76,6 +91,8 @@ function App() {
       </header>
 
       <main>
+        <Login onLogin={setUser} featureEnabled={featureEnabled} />
+
         <section>
           <h2>Crear Wallet</h2>
           <form onSubmit={handleCreateWallet}>
@@ -99,6 +116,9 @@ function App() {
 
         <section>
           <h2>Wallets</h2>
+          <div>
+            Usuario: {user ? user.username : 'anónimo'}
+          </div>
           <button onClick={loadWallets}>Actualizar lista</button>
           <pre>{JSON.stringify(wallets, null, 2)}</pre>
         </section>

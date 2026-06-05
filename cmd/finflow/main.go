@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Unleash/unleash-client-go/v4"
 	"github.com/josiastomasnanez/finflow/internal/api"
 	"github.com/josiastomasnanez/finflow/internal/service"
 	"github.com/josiastomasnanez/finflow/internal/storage"
@@ -26,8 +27,30 @@ func main() {
 	}
 	defer func() { _ = sqliteStore.Close() }()
 
-	service := service.NewWalletService(sqliteStore)
-	server := api.NewServer(service)
+	unleashURL := os.Getenv("UNLEASH_URL")
+	unleashToken := os.Getenv("UNLEASH_TOKEN")
+
+	if unleashURL != "" && unleashToken != "" {
+		log.Printf("Initializing Unleash with URL: %s", unleashURL)
+		err := unleash.Initialize(
+			unleash.WithAppName("finflow-backend"),
+			unleash.WithUrl(unleashURL),
+			unleash.WithCustomHeaders(http.Header{
+				"Authorization": []string{unleashToken},
+			}),
+		)
+		if err != nil {
+			log.Printf("Warning: failed to initialize Unleash: %v", err)
+		} else {
+			defer func() { _ = unleash.Close() }()
+		}
+	} else {
+		log.Println("Warning: UNLEASH_URL or UNLEASH_TOKEN not found. Feature flags will default to false.")
+	}
+
+	walletService := service.NewWalletService(sqliteStore)
+	authService := service.NewAuthService()
+	server := api.NewServer(walletService, authService)
 
 	log.Printf("starting FinFlow API on http://0.0.0.0:8080 using DB %s", dbPath)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -45,12 +68,17 @@ func loadEnvFile() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		if strings.HasPrefix(line, "DB_PATH=") {
-			value := strings.TrimPrefix(line, "DB_PATH=")
-			if value != "" {
-				_ = os.Setenv("DB_PATH", value)
-			}
-			return
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+		if key != "" && value != "" {
+			_ = os.Setenv(key, value)
 		}
 	}
 }

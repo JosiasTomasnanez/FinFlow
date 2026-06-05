@@ -2,8 +2,8 @@ package api
 
 import (
 	"net/http"
-	"os"
 
+	"github.com/Unleash/unleash-client-go/v4"
 	"github.com/gin-gonic/gin"
 	"github.com/josiastomasnanez/finflow/internal/model"
 	"github.com/josiastomasnanez/finflow/internal/service"
@@ -11,6 +11,11 @@ import (
 
 func authLoginHandler(authService *service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if !unleash.IsEnabled("login-feature-flag") {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Funcionalidad no disponible"})
+			return
+		}
+
 		var request model.LoginRequest
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -29,7 +34,7 @@ func authLoginHandler(authService *service.AuthService) gin.HandlerFunc {
 
 func flagStatusHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		enabled := os.Getenv("FEATURE_LOGIN") == "true"
+		enabled := unleash.IsEnabled("login-feature-flag")
 		c.JSON(http.StatusOK, gin.H{"feature_login": enabled})
 	}
 }

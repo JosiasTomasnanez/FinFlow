@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Unleash/unleash-client-go/v4" 
 	"github.com/josiastomasnanez/finflow/internal/api"
 	"github.com/josiastomasnanez/finflow/internal/service"
 	"github.com/josiastomasnanez/finflow/internal/storage"
@@ -25,6 +26,27 @@ func main() {
 		log.Fatalf("failed to initialize sqlite store: %v", err)
 	}
 	defer func() { _ = sqliteStore.Close() }()
+
+	unleashURL := os.Getenv("UNLEASH_URL")
+	unleashToken := os.Getenv("UNLEASH_TOKEN")
+
+	if unleashURL != "" && unleashToken != "" {
+		log.Printf("Initializing Unleash with URL: %s", unleashURL)
+		err := unleash.Initialize(
+			unleash.WithAppName("finflow-backend"),
+			unleash.WithUrl(unleashURL),
+			unleash.WithCustomHeaders(http.Header{
+				"Authorization": []string{unleashToken},
+			}),
+		)
+		if err != nil {
+			log.Printf("Warning: failed to initialize Unleash: %v", err)
+		} else {
+			defer unleash.Close()
+		}
+	} else {
+		log.Println("Warning: UNLEASH_URL or UNLEASH_TOKEN not found. Feature flags will default to false.")
+	}
 
 	walletService := service.NewWalletService(sqliteStore)
 	authService := service.NewAuthService()

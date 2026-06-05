@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/gin-contrib/cors" // <-- 1. IMPORTANTE: Agregá este import
 	"github.com/gin-gonic/gin"
 	"github.com/josiastomasnanez/finflow/internal/service"
 )
@@ -10,6 +11,9 @@ import (
 // NewServer returns a configured HTTP server for the FinFlow API.
 func NewServer(walletService *service.WalletService, authService *service.AuthService) *http.Server {
 	router := gin.Default()
+
+	// 2. IMPORTANTE: Activá el middleware de CORS por defecto justo acá
+	router.Use(cors.Default())
 
 	apiGroup := router.Group("/api")
 	apiGroup.GET("/health", healthHandler)

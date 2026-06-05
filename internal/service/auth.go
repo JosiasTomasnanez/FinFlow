@@ -9,9 +9,9 @@ import (
 
 // AuthService implementa un login muy básico en memoria.
 type AuthService struct {
-	users map[string]string
+	users  map[string]string
 	tokens map[string]string
-	mu sync.RWMutex
+	mu     sync.RWMutex
 }
 
 // NewAuthService crea un servicio de autenticación con un usuario por defecto.

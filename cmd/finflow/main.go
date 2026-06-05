@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Unleash/unleash-client-go/v4" 
+	"github.com/Unleash/unleash-client-go/v4"
 	"github.com/josiastomasnanez/finflow/internal/api"
 	"github.com/josiastomasnanez/finflow/internal/service"
 	"github.com/josiastomasnanez/finflow/internal/storage"

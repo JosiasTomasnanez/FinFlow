@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import Login from './Login'
 
-const BASE_URL = import.meta.env.VITE_API_URL || ''
+
+const BASE_URL = 'https://finflow-backend-uv2f.onrender.com'
 
 const apiFetch = async (path, options = {}) => {
   const response = await fetch(`${BASE_URL}${path}`, options)

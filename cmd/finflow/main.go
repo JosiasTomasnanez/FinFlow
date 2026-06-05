@@ -42,7 +42,7 @@ func main() {
 		if err != nil {
 			log.Printf("Warning: failed to initialize Unleash: %v", err)
 		} else {
-			defer unleash.Close()
+			defer func() { _ = unleash.Close() }()
 		}
 	} else {
 		log.Println("Warning: UNLEASH_URL or UNLEASH_TOKEN not found. Feature flags will default to false.")

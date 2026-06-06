@@ -1,0 +1,17 @@
+name: CD - Deploy to Staging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-stg:
+    name: Deploy Backend & Frontend to Staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Staging (Backend)
+        run: curl -X POST "${{ secrets.RENDER_STAGING_DEPLOY_HOOK }}"
+
+      - name: Trigger Vercel Staging (Frontend)
+        run: curl -X POST "${{ secrets.VERCEL_STAGING_DEPLOY_HOOK }}"

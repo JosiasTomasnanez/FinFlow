@@ -1,0 +1,18 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copiamos los archivos de configuración de dependencias
+COPY package*.json ./
+
+# Instalamos las dependencias
+RUN npm install
+
+# Copiamos el resto del código del frontend
+COPY . .
+
+# Exponemos el puerto por defecto de Vite
+EXPOSE 5173
+
+# Arrancamos Vite asegurando que escuche peticiones externas al contenedor (--host)
+CMD ["npm", "run", "dev", "--", "--host"]

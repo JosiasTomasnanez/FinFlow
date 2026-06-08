@@ -1,10 +1,32 @@
 services:
+
+  #  PROXY INVERSO
+
+  nginx-proxy:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      finflow-app:
+        condition: service_started
+      finflow-frontend:
+        condition: service_started
+      unleash-web:
+        condition: service_healthy
+      grafana:
+        condition: service_healthy 
+    networks:
+      - finflow-net
+
+
+  #  BACKEND (Go)
+
   finflow-app:
     build:
       context: .          
       dockerfile: Dockerfile  
-    ports:
-      - "8080:8080"       
     environment:
       - DB_PATH=${DB_PATH}
       - UNLEASH_URL=http://unleash-web:4242/api/
@@ -13,11 +35,31 @@ services:
     volumes:
       - finflow_data:/app/data  
     depends_on:
-      - unleash-web
+      unleash-web:
+        condition: service_healthy
     networks:
       - finflow-net
 
-  # Base de datos EXCLUSIVA para el motor de Feature Flags
+
+  # FRONTEND (React + Vite)
+
+  finflow-frontend:
+    build:
+      context: ./frontend       
+      dockerfile: Dockerfile.dev 
+    command: npm run dev -- --host --port 5173
+    environment:
+      - PORT=5173 
+      - VITE_API_URL=${VITE_API_URL}
+    volumes:
+      - ./frontend:/app         
+      - /app/node_modules       
+    networks:
+      - finflow-net
+
+
+  # BASE DE DATOS (Postgres)
+
   unleash-db:
     image: postgres:15-alpine
     environment:
@@ -26,30 +68,76 @@ services:
       POSTGRES_PASSWORD: ${UNLEASH_DB_PASSWORD}
     volumes:
       - unleash_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - finflow-net
 
-  # Servidor de Unleash (Interfaz Gráfica / Dashboard Web)
+  #  SERVIDOR UNLEASH
+
   unleash-web:
     image: unleashorg/unleash-server:latest
-    ports:
-      - "4242:4242" 
+    restart: unless-stopped
     environment:
-      # Construcción dinámica de la URL de conexión a la base de datos
       DATABASE_URL: postgres://${UNLEASH_DB_USER}:${UNLEASH_DB_PASSWORD}@unleash-db:5432/${UNLEASH_DB_NAME}
       DATABASE_SSL: "false"
       INIT_ADMIN_API_TOKENS: ${UNLEASH_SECRET_TOKEN}
+
+      URL_PREFIX: /unleash
+      UNLEASH_URL: http://localhost/unleash/
+
+      BYPASS_WWW_AUTH_FOR_TESTING: "true"
     depends_on:
-      - unleash-db
+      unleash-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:4242/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - finflow-net
 
-# Declaración de Volúmenes para Persistencia de Datos
-volumes:
-  finflow_data:      # Mantiene tu archivo finflow.db a salvo
-  unleash_db_data:   # Mantiene tus Feature Flags configuradas a salvo
+  # PROMETHEUS (Oculto de Nginx)
 
-# Aislamiento de Redes
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - finflow-net
+
+  #  GRAFANA
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    restart: unless-stopped
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true 
+    volumes:
+      - grafana_data:/var/lib/grafana
+    healthcheck: # 👈 LE METEMOS EL HEALTHCHECK A GRAFANA ACÁ
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - finflow-net
+
+volumes:
+  finflow_data:      
+  unleash_db_data:   
+  grafana_data: 
+
 networks:
   finflow-net:       
     driver: bridge

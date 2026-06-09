@@ -102,13 +102,13 @@ services:
     networks:
       - finflow-net
 
-  # PROMETHEUS (Oculto de Nginx)
+  # PROMETHEUS (Puerto externo modificado para evitar colisiones)
 
   prometheus:
     image: prom/prometheus:latest
     restart: unless-stopped
     ports:
-      - "9090:9090"
+      - "9091:9090" # 👈 Cambiado de 9090:9090 a 9091:9090
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
@@ -124,7 +124,7 @@ services:
       - GF_SERVER_SERVE_FROM_SUB_PATH=true 
     volumes:
       - grafana_data:/var/lib/grafana
-    healthcheck: # 👈 LE METEMOS EL HEALTHCHECK A GRAFANA ACÁ
+    healthcheck: 
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
       interval: 5s
       timeout: 5s

@@ -1,108 +1,156 @@
-# 💰 FinFlow - DevOps Methodology & Agile Practices
+# 💰 FinFlow - Metodología DevOps, Prácticas Ágiles e Ingeniería de Plataformas
 
 ---
 
-## 1. 🏢 Company Overview & Business Model
-FinFlow is a fintech startup operating a digital wallet and payment platform tailored for individuals, merchants, and SMEs. The platform centralizes payments, transfers, QR codes, online billing, and a dedicated investment module for stocks and financial instruments. 
+## 1. 🏢 Descripción de la Empresa y Modelo de Negocio
+FinFlow es una startup fintech en crecimiento que opera una billetera digital y una plataforma de pagos diseñada para individuos, comercios y PYMEs. La plataforma centraliza transferencias entre usuarios (P2P), saldos de billeteras digitales y el procesamiento de pagos mediante una API REST.
 
-Our revenue model relies primarily on transaction commissions from merchants, premium business plans, and investment operation fees. The 20-person team is organized across Software Development, Operations, Product, and QA, adopting **Scrum** alongside a mature **DevOps/SRE culture** to accelerate value delivery and ensure financial-grade stability.
-
----
-
-## 2. 🏗️ Architectural Concept & Culture
-* **Microservices Architecture:** FinFlow is built as decoupled, independent services (payments, users, auth) to ensure high resilience, isolated blast radiuses, and independent deployment cycles.
-* **Cloud Infrastructure:** Fully deployed in the cloud, leveraging load balancing and auto-scaling to dynamically adapt to transactional demand.
-* **DevOps & Shift-Left:** Development and Operations teams collaborate without silos. Security and testing are integrated from the earliest stages of the lifecycle (Shift-Left approach).
+Nuestro modelo de ingresos se basa principalmente en comisiones por transacciones de comercios, planes comerciales premium y tarifas por operaciones de gestión de activos. La organización, compuesta por un equipo cross-functional de 20 personas, se divide en Desarrollo de Software, Plataforma/Operaciones, Producto y QA. Adoptamos **Scrum** junto con una madura **cultura DevOps/SRE** para acelerar la velocidad de entrega de funcionalidades, garantizando al mismo tiempo estabilidad y cumplimiento normativo de nivel financiero.
 
 ---
 
-## 3. Tecnologías utilizadas
-### 3.1 Desarrollo
-Se utilizan los siguientes lenguajes y frameworks:
-* Lenguajes: Go (backend) y JavaScript (frontend)
-* Frameworks: Gin Gonic y React
+## 2. 🏗️ Concepto Arquitectónico y Evolución de la Infraestructura
+
+### Arquitectura Actual (Fase MVP y Staging)
+Para optimizar la velocidad del desarrollo inicial y minimizar los costos tempranos de infraestructura, FinFlow está diseñado actualmente como un **Monolito Modular**:
+* **Backend:** Un servidor altamente eficiente escrito en **Go (Golang)** potenciado por el framework web **Gin-Gonic**, que encapsula la lógica de negocio de billeteras y pagos bajo módulos estructurados.
+* **Frontend:** Una aplicación moderna de página única (SPA) construida con **React, TypeScript y Vite**, servida por el propio backend de Go o alojada de forma independiente.
+* **Persistencia:** Instancias de **SQLite** completamente aisladas por entorno, lo que garantiza una estricta separación de datos entre Staging y Producción sin la sobrecarga de grandes clusters de bases de datos durante la fase de validación.
+
+### Roadmap Arquitectónico Empresarial (Estado Futuro)
+A medida que la concurrencia de transacciones escale y los requisitos de cumplimiento normativo se vuelvan más estrictos, el roadmap arquitectónico de FinFlow contempla una migración fluida hacia:
+1. **Transición a Microservicios:** Desacoplar el monolito modular en dominios especializados (Servicio de Autenticación, Ledger de Pagos, Gestión de Usuarios) con radios de impacto (*blast radiuses*) aislados.
+2. **Capa de Datos Empresarial:** Migrar de SQLite a **PostgreSQL** para aprovechar el cumplimiento estricto de ACID a nivel empresarial, la gestión de conexiones concurrentes y el bloqueo a nivel de fila (*row-level locking*) para transacciones financieras seguras.
+3. **Orquestación Nativa de la Nube:** Transición desde el alojamiento PaaS hacia **Amazon Web Services (AWS)**, gestionando las cargas de trabajo dentro de **Amazon EKS (Kubernetes)** con alta disponibilidad multirregión.
 
 ---
 
-## ⚙️ 4. Processes & DevOps Pipeline
+## 🛠️ 3. Stack Tecnológico y Ecosistema
 
-### 🔄 Branching Strategy (GitHub Flow) & Repository Policies
-To balance startup speed with fintech compliance, the repository strictly follows **GitHub Flow**:
-* `main`: The single source of truth. It represents the stable, production-ready code.
-* `feature/*` or `bugfix/*`: Short-lived branches created directly from `main` for any new requirement or fix. Once the work is done, a Pull Request (PR) is opened.
-* **Guardrails:** The `main` branch is fully protected. Direct pushes are forbidden. Merging requires mandatory Pull Requests, automated pipeline validation, and a minimum of two peer approvals.
+### Aplicación Core
+* **Backend:** Go (Golang) + Framework Gin Gonic
+* **Frontend:** React + Vite + TypeScript
 
-### 🚀 Environment Strategy & Deployment
-We manage two distinct infrastructure environments driven by our single-branch workflow (`main`):
-1. **Staging Environment:** Staging is an isolated testing infrastructure, NOT a Git branch. Every time a PR is approved and merged into `main`, a Continuous Delivery pipeline automatically deploys the code here. This environment is used for final automated QA validation, dynamic security testing (DAST), and user acceptance testing (UAT).
-2. **Production Environment:** Once validated in Staging, the release is promoted to Production. To mitigate transactional risks while keeping infrastructure costs minimal, FinFlow utilizes a dual strategy:
-   * **Rolling Updates:** Used for infrastructure, refactoring, and technical debt. It seamlessly replaces application instances step-by-step to prevent downtime.
-   * **Feature Flags:** Used for new business features and logic. It decouples deployment from release, allowing the team to test in production with internal users before a progressive rollout to real customers.
+### DevOps y Gates de Calidad
+* **Integración Continua (CI):** GitHub Actions
+* **Pruebas Estáticas de Seguridad (SAST):** SonarCloud / SonarQube
+* **Pruebas Dinámicas de Seguridad (DAST):** OWASP ZAP (Automatización Baseline)
+* **Calidad de Código y Linters:** `golangci-lint`
 
-### 📊 CI/CD & Observability
-* **Continuous Integration (CI):** Every push triggers automated builds, static analysis (SAST/Linters), and unit tests before allowing a merge.
-* **Observability:** Continuous loop backed by centralized logging, infrastructure metrics, real-time dashboards, and automated alerting systems. Performance and load testing are triggered to validate stress limits under high concurrency.
+### Observabilidad y Gestión de Releases
+* **Ingesta de Métricas:** Prometheus (Scrapeando el endpoint interno `/metrics` de Gin)
+* **Visualización de Datos:** Dashboards de Grafana (Implementación personalizada de múltiples servicios en Docker sobre Render)
+* **Feature Flags y Despliegue Progresivo:** Servidor Unleash (Self-hosted) y SDK del Cliente en Go
 
 ---
 
-## 👥 4. Agile Framework (Scrum + DevOps Integration)
-FinFlow operates in **two-week Sprints** utilizing Scrum complemented by the **CALMS framework** (Culture, Automation, Lean, Measurement, Sharing).
+## ⚙️ 4. Procesos y Pipeline de DevOps
 
-### 🎭 Roles & Ceremonies
-* **Roles:** Product Owner (Backlog prioritization), Scrum Master (Process facilitation), and a cross-functional squad of Developers, QA, DevOps, and SREs.
-* **Sprint Planning:** Product backlog refinement based on User Stories. SREs evaluate the Error Budget, Developers plan automated testing, and the team estimates effort using Story Points.
-* **Daily Scrum & Reviews:** 15-minute syncs to unblock tasks, followed by end-of-sprint Stakeholder demos to validate the incremental value.
-* **Retrospectives:** Process optimization and blameless post-mortems following any major production incidents to foster continuous improvement.
+### 🔄 Estrategia de Ramas (GitHub Flow) y Políticas del Repositorio
+Para equilibrar la velocidad de una startup con el cumplimiento de software fintech, el repositorio implementa estrictamente **GitHub Flow**:
+* `main`: La única fuente de verdad. Representa el código activo, estable y listo para integración.
+* `feature/*` o `bugfix/*`: Ramas de corta duración creadas a partir de `main`. Una vez que el trabajo se verifica localmente, se abre un Pull Request (PR).
+* **Políticas de Protección de Ramas:** Los pushes directos a `main` están estrictamente prohibidos. Fusionar (mergear) un PR requiere superar todos los gates de calidad automatizados (Build de CI, Linter, análisis de SonarCloud) y recibir revisiones obligatorias de los pares.
 
----
+### 🚀 Estrategia de Entornos y Gestión de Releases con GitOps
+Gestionamos dos entornos de infraestructura distintos, desacoplados del antipatrón de usar "entornos como ramas de Git":
 
-## 🛡️ 5. Site Reliability Engineering (SRE)
-To guarantee financial platform reliability, we actively manage system health through three core pillars:
 
-1. **Service Level Indicators (SLI):** We measure service availability, latency thresholds, error rates, transaction processing speeds, and deployment success rates.
-2. **Service Level Objectives (SLO):** Target benchmarks, including a strict 99.9% monthly availability objective and an error rate cap below 1%.
-3. **Error Budget:** The ultimate decision-making tool. If the error budget is depleted, the team halts new feature deployments to focus 100% on system stabilization and technical debt reduction.
----
-
-## 📦 Proyecto Go + React para DevOps
-Este repositorio ahora incluye un proyecto FinFlow con:
-
-- Backend en Go usando Gin Gonic
-- Frontend en React con Vite
-- API REST mínima en `cmd/finflow/main.go`
-- Endpoints para `wallets` y `payments` accesibles en `/api/*`
-- Lógica de negocio con un servicio de wallet y transferencia
-- Almacenamiento en memoria para pruebas rápidas
-- Pruebas unitarias en `internal/service/wallet_test.go`
-- Pipeline básico en `.github/workflows/build.yml`
-- Configuración de `sonar-project.properties` para SonarQube/SonarCloud
-- Linter con `.golangci.yml`
-- `Dockerfile` y `Makefile` para build, test y lint
-
-### Comandos útiles
-- `go test ./...`
-- `make build`
-- `make lint`
-- `make docker`
-- `make frontend-build`
-- `make run`
-
-### Iniciar la aplicación localmente
-1. `cd frontend && npm install`
-2. `cd frontend && npm run build`
-3. `go build ./cmd/finflow`
-4. `./finflow`
-5. Abrir `http://localhost:8080/`
-
-También podés ejecutar sólo el frontend en modo desarrollo:
-```bash
-cd frontend
-npm install
-npm run dev
 ```
 
-### Interfaz web
-La aplicación ahora sirve una UI React construida con Vite.
-- Abrí `http://localhost:8080/` en el navegador.
-- Podés crear wallets, listar wallets y realizar pagos desde la pantalla.
-- La UI usa los endpoints REST bajo `/api/*` en segundo plano.
+[ Developer PR ] ➔ [ Merge to main ] ➔ [ Trigger Staging Deploy (Webhook) ] ➔ [ Run DAST / Security Scan ]
+│
+[ Production Release ] 🡠 [ Automated Tag Validation ] 🡠 [ Git Tag Created (vX.X.X) ] 🡠┘
+
+```
+
+1. **Entorno de Staging:**
+   * **Disparador:** Cada PR aprobado y mergeado a `main` activa automáticamente un despliegue inmutable a Staging (Backend en Render, Frontend en Vercel).
+   * **Bucle de Validación:** Una vez desplegado, se permite un tiempo de estabilización de 90 segundos. Luego, se ejecuta un escaneo automatizado **OWASP ZAP DAST** dinámicamente contra el entorno para verificar la postura de seguridad antes de la promoción.
+2. **Entorno de Producción:**
+   * **Disparador:** Se activa exclusivamente mediante Tags de Release de Git (`v*.*.*`). Esto establece un registro de auditoría claro.
+   * **Mecanismo de Despliegue:** Aunque la arquitectura en la nube actual se basa en disparadores de promoción directa, el próximo roadmap de AWS introduce **Rolling Updates** nativos a través del ciclo de vida de los Pods de Kubernetes para garantizar despliegues con cero tiempo de inactividad (*zero-downtime*).
+   * **Feature Flags:** Impulsado por **Unleash**. Las funcionalidades de negocio se desacoplan de los despliegues. El código se libera de forma segura a producción en estado latente y se habilita progresivamente para testers internos (alpha), grupos canario y, finalmente, al 100% de la base de clientes.
+
+---
+
+## 👥 5. Framework Ágil (Integración de Scrum + DevOps)
+FinFlow opera en **Sprints de dos semanas** utilizando Scrum complementado por el **framework CALMS** (Cultura, Automatización, Lean, Medición, Compartir).
+
+* **Ceremonies & Planning:** Los SREs evalúan el **Presupuesto de Errores (Error Budget)** actual durante el Sprint Planning. Los desarrolladores planifican la cobertura de la automatización de pruebas, y los requisitos se estructuran en Historias de Usuario estimadas en Story Points.
+* **Feedback Continuo:** Las reuniones diarias (Daily Standups) de 15 minutos desbloquean las tareas entre áreas. Las retrospectivas fomentan la mejora continua de los procesos y aplican estrictamente una **cultura de post-mortems sin culpas (blameless)** tras cualquier incidente mayor en staging o producción.
+
+---
+
+## 🛡️ 6. Ingeniería de Confiabilidad del Sitio (SRE) y Observability
+
+La salud de la plataforma se monitorea proactivamente a través de telemetría en vivo y métricas contractuales:
+1. **Indicadores de Nivel de Servicio (SLI):** Medimos activamente los umbrales de latencia de las peticiones a la API, tasas de error HTTP 5xx, estado de conexión de la base de datos y métricas de ejecución de Prometheus.
+2. **Objetivos de Nivel de Servicio (SLO):** Nos comprometemos con un estricto objetivo de **99.9% de disponibilidad mensual del sistema** y un límite de tasa de errores estrictamente por debajo del 1.0%.
+3. **Presupuesto de Errores (Error Budget):** El marco definitivo para la toma de decisiones. Si las anomalías en producción agotan el Error Budget mensual asignado, los despliegues de producto se detienen instantáneamente y todo el equipo de ingeniería se enfoca al 100% en la reducción de deuda técnica y la estabilización de la infraestructura.
+
+### Hubs de Telemetría en Vivo (Staging)
+* **Target de la API de la Aplicación:** `https://finflow-backend-uv2f.onrender.com/metrics`
+* **Plano de Control de Feature Flags:** `https://unleash-web-1e2b.onrender.com`
+* **Dashboard de Métricas y Analíticas:** `https://prometheus-config-brn4.onrender.com` *(Ciclo de scraping vivo auto-sostenido)*
+
+---
+
+## 📦 Inicio Rápido para Desarrollo Local
+
+### Estructura de Directorios
+- `cmd/finflow/main.go`: Punto de entrada central de la API REST que inicializa los módulos de Go.
+- `internal/service/`: Lógica del dominio de negocio, manejadores de ejecución de transferencias y gestión de estado.
+- `frontend/`: Código fuente independiente de la aplicación de página única en React/Vite.
+
+### Ejecutar el programa Localmente
+1. **Compilar y empaquetar el Frontend:**
+   ```bash
+   cd frontend
+   npm install
+   npm run build
+
+2. **Compilar y ejecutar el Backend en Go:**
+  ```bash
+  cd ..
+  go build ./cmd/finflow
+  ./finflow
+
+  ```
+
+
+3. **Acceder a la aplicación:** Abre `http://localhost:8080/` en tu navegador. La interfaz de React interactuará de forma nativa con los endpoints de la API de Go bajo `/api/*`.
+
+Para ejecutar solo el frontend en modo de desarrollo con recarga en caliente (*hot-reload*):
+
+  ```bash
+  cd frontend
+  npm run dev
+
+  ```
+
+## 📦 Inicio rapido usando Docker Compose
+
+La forma más eficiente y confiable de levantar todo el ecosistema de FinFlow localmente es utilizando Docker Compose. Esta estrategia orquesta todos los módulos de la aplicación, las capas de persistencia y los pipelines de observabilidad detrás de un proxy inverso de Nginx, replicando la topología de red y seguridad de producción.
+
+### Levantar el Ecosistema Local
+Ejecuta el siguiente comando desde el directorio raíz para compilar y desplegar todos los contenedores en segundo plano:
+
+  ```bash
+  docker-compose up -d --build
+
+  ```
+
+### Matriz de Enrutamiento Local
+
+Una vez que todos los contenedores se estabilizan, Nginx expone de forma segura cada servicio de la infraestructura bajo el puerto `80`, eliminando por completo los conflictos de CORS y el manejo complejo de puertos:
+
+| Ruta del Gateway | Servicio de la Plataforma | Propósito Operativo |
+| --- | --- | --- |
+| `http://localhost/` | **React SPA Frontend** | Interfaz Web de Usuario lista para producción |
+| `http://localhost/api/*` | **Go Backend (Gin)** | APIs REST Core y Motores del Ledger Financiero |
+| `http://localhost/metrics` | **Prometheus Engine** | Ingesta de Telemetría y Scraping en Tiempo Real |
+| `http://localhost/grafana` | **Plataforma Grafana** | Métricas de Rendimiento y Dashboards Analíticos |
+| `http://localhost/unleash` | **Servidor Unleash** | Plano de Control y Gestión de Feature Flags |
+
+*Para apagar de forma segura todo el stack de la infraestructura local, simplemente ejecuta:* `docker-compose down`

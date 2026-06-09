@@ -1,9 +1,32 @@
-security-scan:
+name: CI/CD Deploy Staging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # 1. Tu Job original de despliegue
+  deploy-stg:
+    name: Deploy Backend & Frontend to Staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Staging (Backend)
+        run: curl -X POST "${{ secrets.RENDER_STAGING_DEPLOY_HOOK }}"
+
+      - name: Trigger Vercel Staging (Frontend)
+        run: curl -X POST "${{ secrets.VERCEL_STAGING_DEPLOY_HOOK }}"
+
+      - name: Wait for staging deployment
+        run: sleep 90
+
+#Job de seguridad (OWASP ZAP)
+  security-scan:
     name: Security Scan (OWASP ZAP)
     runs-on: ubuntu-latest
     needs: deploy-stg
     permissions:
-      issues: write
+      issues: write # Permiso para crear Issues en GitHub
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,4 +47,4 @@ security-scan:
         with:
           target: "https://finflow-backend-uv2f.onrender.com/metrics" 
           issue_title: "Security Scan Alerts - Backend API"
-          artifact_name: "zap-report-backend" # Nombre único para el artefacto del back
+          artifact_name: "zap-report-backend" #Nombre único para el artefacto del back

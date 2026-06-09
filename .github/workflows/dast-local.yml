@@ -1,0 +1,58 @@
+name: DAST - OWASP ZAP Local Scan
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  push:
+    branches:
+      - "feature/**"
+      - "bugfix/**"
+
+jobs:
+  dast-local:
+    name: Run OWASP ZAP against local app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Start frontend locally
+        working-directory: frontend
+        run: |
+          npm run dev -- --host 0.0.0.0 > frontend.log 2>&1 &
+          echo $! > frontend.pid
+
+      - name: Wait for frontend
+        run: |
+          npx wait-on http://127.0.0.1:3000
+
+      - name: Run OWASP ZAP baseline scan
+        run: |
+          docker run --network host \
+            -v ${{ github.workspace }}:/zap/wrk/:rw \
+            zaproxy/zap-stable \
+            zap-baseline.py \
+            -t http://127.0.0.1:3000/ \
+            -r zap-report.html || true
+
+      - name: Upload ZAP report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: zap-report.html

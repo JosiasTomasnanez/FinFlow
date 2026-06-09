@@ -15,3 +15,12 @@ jobs:
 
       - name: Trigger Vercel Staging (Frontend)
         run: curl -X POST "${{ secrets.VERCEL_STAGING_DEPLOY_HOOK }}"
+
+      - name: Wait for staging deployment
+        run: sleep 90
+
+      - name: Run OWASP ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.14.0
+        continue-on-error: true
+        with:
+          target: "https://finflow-sand.vercel.app/"

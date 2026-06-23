@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unleash-web
+  namespace: finflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unleash-web
+  template:
+    metadata:
+      labels:
+        app: unleash-web
+    spec:
+      containers:
+        - name: unleash-web
+          # 🌟 VOLVEMOS A LATEST PORQUE EL INGRESS YA SE BANCA LOS ESTÁTICOS 🌟
+          image: unleashorg/unleash-server:latest
+          ports:
+            - containerPort: 4242
+          env:
+            - name: DATABASE_HOST
+              value: "unleash-db"
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: unleash-db-config
+                  key: POSTGRES_DB
+            - name: DATABASE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: unleash-db-config
+                  key: POSTGRES_USER 
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: unleash-db-secret
+                  key: POSTGRES_PASSWORD 
+            - name: DATABASE_SSL
+              value: "false"
+            
+            # --- CONFIGURACIÓN DIRECTA SIN PREFIJOS INTERNOS ---
+            - name: BYPASS_WWW_AUTH_FOR_TESTING
+              value: "true"
+
+            - name: INIT_ADMIN_API_TOKENS
+              valueFrom:
+                secretKeyRef:
+                  name: finflow-backend-secret
+                  key: UNLEASH_TOKEN
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unleash-web
+  namespace: finflow
+spec:
+  selector:
+    app: unleash-web
+  ports:
+    - port: 4242
+      targetPort: 4242
+  type: ClusterIP

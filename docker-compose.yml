@@ -108,7 +108,7 @@ services:
     image: prom/prometheus:latest
     restart: unless-stopped
     ports:
-      - "9091:9090" # 👈 Cambiado de 9090:9090 a 9091:9090
+      - "9091:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:

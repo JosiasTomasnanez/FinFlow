@@ -29,16 +29,20 @@ func (l *unleashLogger) OnRegistered(payload unleash.ClientData) {}
 func main() {
 	loadEnvFile()
 
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
-		dbPath = "./data/finflow.db"
+	// Prefer DATABASE_URL (standard) falling back to DB_PATH for compatibility.
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		dbURL = os.Getenv("DB_PATH")
+	}
+	if dbURL == "" {
+		log.Fatalf("DATABASE_URL or DB_PATH environment variable must be set to a Postgres DSN")
 	}
 
-	sqliteStore, err := storage.NewSQLiteStore(dbPath)
+	pgStore, err := storage.NewPostgresStore(dbURL)
 	if err != nil {
-		log.Fatalf("failed to initialize sqlite store: %v", err)
+		log.Fatalf("failed to initialize postgres store: %v", err)
 	}
-	defer func() { _ = sqliteStore.Close() }()
+	defer func() { _ = pgStore.Close() }()
 
 	unleashURL := os.Getenv("UNLEASH_URL")
 	unleashToken := os.Getenv("UNLEASH_TOKEN")
@@ -69,11 +73,11 @@ func main() {
 		log.Println("Warning: UNLEASH_URL or UNLEASH_TOKEN not found. Feature flags will default to false.")
 	}
 
-	walletService := service.NewWalletService(sqliteStore)
+	walletService := service.NewWalletService(pgStore)
 	authService := service.NewAuthService()
 	server := api.NewServer(walletService, authService)
 
-	log.Printf("starting FinFlow API on http://0.0.0.0:8080 using DB %s", dbPath)
+	log.Printf("starting FinFlow API on http://0.0.0.0:8080 using DB %s", dbURL)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("server failed: %v", err)
 	}

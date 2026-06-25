@@ -4,7 +4,13 @@ metadata:
   name: finflow-frontend
   namespace: finflow
 spec:
-  replicas: 1
+  replicas: 3
+  minReadySeconds: 8
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: finflow-frontend
@@ -15,8 +21,8 @@ spec:
     spec:
       containers:
         - name: finflow-frontend
-          image: finflow-frontend:latest
-          imagePullPolicy: Never
+          image: finflow-frontend:v3
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
           env:
@@ -31,6 +37,7 @@ metadata:
   name: finflow-frontend
   namespace: finflow
 spec:
+  sessionAffinity: ClientIP
   selector:
     app: finflow-frontend
   ports:

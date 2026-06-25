@@ -1,18 +1,27 @@
-FROM node:20-alpine
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Copia los archivos de configuración de dependencias
 COPY package*.json ./
-
-# Instala las dependencias
 RUN npm install
 
-# Copia el resto del código del frontend
 COPY . .
 
-# Expone el puerto por defecto de Vite
-EXPOSE 5173
+RUN npm run build
 
-# Arranca Vite asegurando que escuche peticiones externas al contenedor (--host)
-CMD ["npm", "run", "dev", "--", "--host"]
+FROM nginx:1.25-alpine
+
+COPY --from=build /app/dist /usr/share/nginx/html
+
+RUN echo 'server { \
+    listen 3000; \
+    location / { \
+        root /usr/share/nginx/html; \
+        index index.html index.htm; \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
+EXPOSE 3000
+
+CMD ["nginx", "-g", "daemon off;"]

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import Login from './Login'
 
 
-const BASE_URL = import.meta.env.VITE_API_URL
+// En tu App.jsx cambiar esto:
+const BASE_URL = import.meta.env.VITE_API_URL || ''
 
 const apiFetch = async (path, options = {}) => {
   const response = await fetch(`${BASE_URL}${path}`, options)
@@ -88,7 +89,7 @@ function App() {
     <div className="page">
       <header>
         <h1>FinFlow</h1>
-        <p>Demo sencilla con backend Gin y frontend React.</p>
+        <p>Demo sencilla con backend Gin y frontend React V2.</p>
       </header>
 
       <main>

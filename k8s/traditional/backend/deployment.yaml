@@ -22,8 +22,6 @@ spec:
           env:
             - name: DATABASE_URL
               value: "postgresql://finflow_user:SuperPasswordSegura123@postgres-service:5432/finflow_db?sslmode=disable"
-            
-            # 🌟 SOLUCIÓN DIRECTA: Le pegamos al Service interno y al puerto 4242 sin prefijos
             - name: UNLEASH_URL
               value: "http://unleash-web:4242/api"
             

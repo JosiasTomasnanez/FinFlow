@@ -1,0 +1,33 @@
+backend:
+  replicas: 1
+  port: 8080
+  image:
+    repository: finflow-app
+    tag: dev
+  databaseUrl: "postgresql://finflow_user:SuperPasswordSegura123@finflow-staging-postgres-service:5432/finflow_db?sslmode=disable"
+  unleashToken: "*:development.ab019863e72c308331b4cd4c2f0178670353e4e4b6e1d30b5a0ddc31"
+  unleashUrl: "http://unleash-web.finflow-staging.svc.cluster.local:4242/api"
+
+database:
+  user: finflow_user
+  password: SuperPasswordSegura123
+  name: finflow_db
+  storageSize: 1Gi 
+
+frontend:
+  replicas: 1
+  image:
+    repository: docker.io/library/finflow-frontend
+    tag: v3
+  apiUrl: "http://staging.finflow.local:8081/api" 
+
+unleash:
+  db:
+    user: admin_staging_devops
+    password: PasswordStagingSeguro987
+    name: unleash_staging_db
+    storageSize: 1Gi
+
+ingress:
+  host: "staging.finflow.local"
+  grafanaHost: "grafana-staging.finflow.local"

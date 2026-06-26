@@ -4,14 +4,12 @@ metadata:
   name: finflow-ingress
   namespace: finflow
   annotations:
-    # 🌟 FIX 1: Corregimos el nombre para que coincida exactamente con el Middleware de abajo
     traefik.ingress.kubernetes.io/router.middlewares: finflow-unleash-stripprefix@kubernetescrd
 spec:
   ingressClassName: traefik 
   rules:
     - http:
         paths:
-          # 🪓 LA ATADA CON ALAMBRE: Todo lo que pida /static va directo a Unleash
           - path: /static
             pathType: Prefix
             backend:
@@ -19,8 +17,6 @@ spec:
                 name: unleash-web
                 port:
                   number: 4242
-
-          # Ruta principal para entrar
           - path: /unleash
             pathType: Prefix
             backend:
@@ -28,8 +24,6 @@ spec:
                 name: unleash-web
                 port:
                   number: 4242
-
-          # 🌟 FIX 2: Le agregamos la ruta de autenticación para que no se la apropie tu Frontend
           - path: /auth
             pathType: Prefix
             backend:
@@ -38,7 +32,6 @@ spec:
                 port:
                   number: 4242
 
-          # APIs de Unleash
           - path: /api/admin
             pathType: Prefix
             backend:
@@ -54,7 +47,6 @@ spec:
                 port:
                   number: 4242
 
-          # 📊 Grafana
           - path: /grafana
             pathType: Prefix
             backend:
@@ -63,7 +55,6 @@ spec:
                 port:
                   number: 3000
 
-          # 🚀 Backend de Go
           - path: /api
             pathType: Prefix
             backend:
@@ -79,7 +70,6 @@ spec:
                 name: finflow-app-service 
                 port:
                   number: 8080
-          # 💻 Frontend de React
           - path: /
             pathType: Prefix
             backend:
@@ -88,11 +78,9 @@ spec:
                 port:
                   number: 3000
 ---
-# Este objeto se encarga de comerse la palabra "/unleash" antes de mandarla al pod
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  # 🌟 FIX 3: Le agregamos el prefijo 'finflow-' al name para que coincida con la anotación del Ingress
   name: finflow-unleash-stripprefix
   namespace: finflow
 spec:

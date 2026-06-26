@@ -128,8 +128,6 @@ spec:
                   key: POSTGRES_PASSWORD
             - name: DATABASE_SSL
               value: "false"
-            
-            # 🌟 CONFIGURACIÓN DE RUTAS REPARADA (Sin UNLEASH_URL fija)
             - name: URL_PREFIX
               value: "/unleash"
             - name: EXP_FLAGS

@@ -48,15 +48,12 @@ data:
               names:
                 - finflow
         relabel_configs:
-          # 🌟 Filtra para quedarte SOLO con los pods que pertenecen a tu finflow-app-service
           - source_labels: [__meta_kubernetes_service_name]
             action: keep
             regex: finflow-app-service
-          # 🌟 Mapea el puerto correcto de tu app (8080)
           - source_labels: [__meta_kubernetes_pod_container_port_number]
             action: keep
             regex: "8080"
-          # 🌟 ESTA ES LA MAGIA: Guarda el nombre del pod real en la etiqueta 'pod'
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
 ---
@@ -75,7 +72,7 @@ spec:
       labels:
         app: prometheus
     spec:
-      serviceAccountName: prometheus-sa # 👈 Le asignamos los permisos creados arriba
+      serviceAccountName: prometheus-sa 
       containers:
         - name: prometheus
           image: prom/prometheus:latest

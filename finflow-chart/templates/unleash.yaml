@@ -1,0 +1,146 @@
+{{- if eq .Release.Name "finflow-staging" }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-unleash-secret
+type: Opaque
+stringData:
+  postgres-user: "{{ .Values.unleash.db.user }}"
+  postgres-password: "{{ .Values.unleash.db.password }}"
+  postgres-db: "{{ .Values.unleash.db.name }}"
+  unleash-token: "{{ .Values.backend.unleashToken }}"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-unleash-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.unleash.db.storageSize }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-unleash-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-unleash-db
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-unleash-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-unleash-secret
+                  key: postgres-db
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-unleash-secret
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-unleash-secret
+                  key: postgres-password
+          volumeMounts:
+            - name: db-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: db-storage
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-unleash-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-unleash-db
+spec:
+  selector:
+    app: {{ .Release.Name }}-unleash-db
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-unleash-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-unleash-web
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-unleash-web
+    spec:
+      containers:
+        - name: unleash-web
+          image: unleashorg/unleash-server:latest
+          ports:
+            - containerPort: 4242
+          env:
+            - name: DATABASE_HOST
+              value: "{{ .Release.Name }}-unleash-db" 
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-unleash-secret
+                  key: postgres-db
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-unleash-secret
+                  key: postgres-user
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-unleash-secret
+                  key: postgres-password
+            - name: DATABASE_SSL
+              value: "false"
+            - name: BYPASS_WWW_AUTH_FOR_TESTING
+              value: "true"
+            - name: INIT_ADMIN_API_TOKENS
+              value: "*:*.MasterAdminTokenSeguro123,*:*.4722f1994fdab39c87f92efd6d698ad65bf219bc3bcea60ec4bf052c,*:*.b641599d0bb2d6a898c05e31891f15dae0ef348397a8f17b1834048d"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unleash-web
+spec:
+  selector:
+    app: {{ .Release.Name }}-unleash-web
+  ports:
+    - port: 4242
+      targetPort: 4242
+  type: ClusterIP
+{{- else }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: unleash-central-bridge-service
+spec:
+  type: ExternalName
+  externalName: unleash-web.finflow-staging.svc.cluster.local
+  ports:
+    - port: 4242
+{{- end }}

@@ -8,6 +8,7 @@ require (
 	github.com/Unleash/unleash-client-go/v4 v4.5.0
 	github.com/gin-contrib/cors v1.7.7
 	github.com/jackc/pgx/v5 v5.6.0
+	github.com/redis/go-redis/v9 v9.21.0
 	github.com/zsais/go-gin-prometheus v1.0.3
 )
 
@@ -52,6 +53,7 @@ require (
 	github.com/twmb/murmur3 v1.1.8 // indirect
 	github.com/ugorji/go/codec v1.3.1 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.5.0 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/arch v0.23.0 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/net v0.51.0 // indirect

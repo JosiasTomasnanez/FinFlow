@@ -89,7 +89,7 @@ function App() {
     <div className="page">
       <header>
         <h1>FinFlow</h1>
-        <p>Demo sencilla con backend Gin y frontend React V2.</p>
+        <p>Demo sencilla con backend Gin y frontend React V3.</p>
       </header>
 
       <main>

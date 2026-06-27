@@ -6,12 +6,16 @@ data:
   UNLEASH_URL: "{{ .Values.backend.unleashUrl }}"
   UNLEASH_APP_NAME: "finflow-app"
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: {{ .Release.Name }}-app
 spec:
   replicas: {{ .Values.backend.replicas }} 
+  strategy:
+    canary:
+      steps:
+        {{- toYaml .Values.backend.argoStrategy.steps | nindent 8 }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-app
@@ -29,6 +33,8 @@ spec:
           env:
             - name: DATABASE_URL
               value: "{{ .Values.backend.databaseUrl }}" 
+            - name: REDIS_URL
+              value: "{{ .Values.backend.redisUrl }}"
             - name: UNLEASH_URL
               value: "{{ .Values.backend.unleashUrl }}"
             - name: UNLEASH_APP_NAME

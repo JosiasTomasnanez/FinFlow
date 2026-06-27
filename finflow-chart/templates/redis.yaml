@@ -1,1 +1,42 @@
-
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-redis
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-redis
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        command: ["redis-server", "--port", "6339"]
+        ports:
+        - containerPort: 6339
+          name: redis
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-redis-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - port: 6339
+    targetPort: 6339
+  selector:
+    app: {{ .Release.Name }}-redis
+  type: ClusterIP

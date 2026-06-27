@@ -2,12 +2,16 @@ backend:
   replicas: 1
   port: 8080
   image:
-    repository: finflow-app
-    tag: dev
+    repository: josiastomasnanez/finflow-app
+    tag: v2
   databaseUrl: "postgresql://finflow_user:SuperPasswordSegura123@finflow-staging-postgres-service:5432/finflow_db?sslmode=disable"
+  redisUrl: "redis://finflow-staging-redis-service:6339/0"
   unleashToken: "*:development.ab019863e72c308331b4cd4c2f0178670353e4e4b6e1d30b5a0ddc31"
   unleashUrl: "http://unleash-web.finflow-staging.svc.cluster.local:4242/api"
-
+  argoStrategy:
+    steps:
+      - setWeight: 33
+      - pause: {}
 database:
   user: finflow_user
   password: SuperPasswordSegura123
@@ -17,10 +21,13 @@ database:
 frontend:
   replicas: 1
   image:
-    repository: docker.io/library/finflow-frontend
+    repository: josiastomasnanez/finflow-frontend
     tag: v3
   apiUrl: "http://staging.finflow.local:8081/api" 
-
+  argoStrategy:
+    steps:
+      - setWeight: 33
+      - pause: {} 
 unleash:
   db:
     user: admin_staging_devops

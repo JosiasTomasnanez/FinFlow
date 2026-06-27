@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-backend-config 
+data:
+  UNLEASH_URL: "{{ .Values.backend.unleashUrl }}"
+  UNLEASH_APP_NAME: "finflow-app"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-app
+spec:
+  replicas: {{ .Values.backend.replicas }} 
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-app
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-app
+    spec:
+      containers:
+        - name: finflow-app
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}" 
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: {{ .Values.backend.port }}
+          env:
+            - name: DATABASE_URL
+              value: "{{ .Values.backend.databaseUrl }}" 
+            - name: UNLEASH_URL
+              value: "{{ .Values.backend.unleashUrl }}"
+            - name: UNLEASH_APP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-backend-config
+                  key: UNLEASH_APP_NAME
+            - name: UNLEASH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-backend-secret
+                  key: UNLEASH_TOKEN
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-backend-secret
+type: Opaque
+stringData: 
+  UNLEASH_TOKEN: "{{ .Values.backend.unleashToken }}" 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-app-service
+spec:
+  selector:
+    app: {{ .Release.Name }}-app
+  ports:
+    - port: {{ .Values.backend.port }}
+      targetPort: {{ .Values.backend.port }}
+  type: ClusterIP

@@ -5,8 +5,6 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-
-	// 1. Agregamos el import de Prometheus para Gin
 	"github.com/josiastomasnanez/finflow/internal/service"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
@@ -17,14 +15,10 @@ func NewServer(walletService *service.WalletService, authService *service.AuthSe
 
 	router.Use(cors.Default())
 
-	// 2. CONFIGURACIÓN DE PROMETHEUS
 	p := ginprometheus.NewPrometheus("gin")
 
-	// Le indicamos que exponga las métricas en la ruta "/api/metrics"
-	// para que coincida con tu apiGroup y Nginx lo capture bien
 	p.MetricsPath = "metrics"
 
-	// 3. Vinculamos Prometheus al router de Gin
 	p.Use(router)
 
 	apiGroup := router.Group("/api")

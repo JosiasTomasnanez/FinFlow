@@ -1,0 +1,50 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-ingress
+spec:
+  ingressClassName: traefik 
+  rules:
+    - host: "{{ .Values.ingress.host }}" 
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-app-service
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-frontend-service
+                port:
+                  number: 3000
+
+    - host: "unleash.finflow.local" 
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                {{- if eq .Release.Name "finflow-staging" }}
+                name: unleash-web
+                {{- else }}
+                name: unleash-central-bridge-service
+                {{- end }}
+                port:
+                  number: 4242
+
+    - host: "{{ .Values.ingress.grafanaHost }}" 
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-grafana-service
+                port:
+                  number: 3000

@@ -1,0 +1,89 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: finflow-ingress
+  namespace: finflow
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: finflow-unleash-stripprefix@kubernetescrd
+spec:
+  ingressClassName: traefik 
+  rules:
+    - http:
+        paths:
+          - path: /static
+            pathType: Prefix
+            backend:
+              service:
+                name: unleash-web
+                port:
+                  number: 4242
+          - path: /unleash
+            pathType: Prefix
+            backend:
+              service:
+                name: unleash-web
+                port:
+                  number: 4242
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: unleash-web
+                port:
+                  number: 4242
+
+          - path: /api/admin
+            pathType: Prefix
+            backend:
+              service:
+                name: unleash-web
+                port:
+                  number: 4242
+          - path: /api/client
+            pathType: Prefix
+            backend:
+              service:
+                name: unleash-web
+                port:
+                  number: 4242
+
+          - path: /grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana-service
+                port:
+                  number: 3000
+
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: finflow-app-service 
+                port:
+                  number: 8080
+
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: finflow-app-service 
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: finflow-frontend
+                port:
+                  number: 3000
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: finflow-unleash-stripprefix
+  namespace: finflow
+spec:
+  stripPrefix:
+    prefixes:
+      - "/unleash"

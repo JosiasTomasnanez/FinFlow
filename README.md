@@ -15,12 +15,12 @@ Nuestro modelo de ingresos se basa principalmente en comisiones por transaccione
 Para optimizar la velocidad del desarrollo inicial y minimizar los costos tempranos de infraestructura, FinFlow está diseñado actualmente como un **Monolito Modular**:
 * **Backend:** Un servidor altamente eficiente escrito en **Go (Golang)** potenciado por el framework web **Gin-Gonic**, que encapsula la lógica de negocio de billeteras y pagos bajo módulos estructurados.
 * **Frontend:** Una aplicación moderna de página única (SPA) construida con **React, TypeScript y Vite**, servida por el propio backend de Go o alojada de forma independiente.
-* **Persistencia:** Instancias de **SQLite** completamente aisladas por entorno, lo que garantiza una estricta separación de datos entre Staging y Producción sin la sobrecarga de grandes clusters de bases de datos durante la fase de validación.
+* **Persistencia:** Instancias de **PostgreSQL** completamente aisladas por entorno, lo que garantiza una estricta separación de datos entre Staging y Producción sin la sobrecarga de grandes clusters de bases de datos durante la fase de validación.
 
 ### Roadmap Arquitectónico Empresarial (Estado Futuro)
 A medida que la concurrencia de transacciones escale y los requisitos de cumplimiento normativo se vuelvan más estrictos, el roadmap arquitectónico de FinFlow contempla una migración fluida hacia:
 1. **Transición a Microservicios:** Desacoplar el monolito modular en dominios especializados (Servicio de Autenticación, Ledger de Pagos, Gestión de Usuarios) con radios de impacto (*blast radiuses*) aislados.
-2. **Capa de Datos Empresarial:** Migrar de SQLite a **PostgreSQL** para aprovechar el cumplimiento estricto de ACID a nivel empresarial, la gestión de conexiones concurrentes y el bloqueo a nivel de fila (*row-level locking*) para transacciones financieras seguras.
+2. **Capa de Datos Empresarial:** Consolidar en **PostgreSQL** para aprovechar el cumplimiento estricto de ACID a nivel empresarial, la gestión de conexiones concurrentes y el bloqueo a nivel de fila (*row-level locking*) para transacciones financieras seguras.
 3. **Orquestación Nativa de la Nube:** Transición desde el alojamiento PaaS hacia **Amazon Web Services (AWS)**, gestionando las cargas de trabajo dentro de **Amazon EKS (Kubernetes)** con alta disponibilidad multirregión.
 
 ---

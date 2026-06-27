@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finflow-app
+  namespace: finflow
+spec:
+  replicas: 3 
+  selector:
+    matchLabels:
+      app: finflow-app
+  template:
+    metadata:
+      labels:
+        app: finflow-app
+    spec:
+      containers:
+        - name: finflow-app
+          image: finflow-app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://finflow_user:SuperPasswordSegura123@postgres-service:5432/finflow_db?sslmode=disable"
+            - name: UNLEASH_URL
+              value: "http://unleash-web:4242/api"
+            
+            - name: UNLEASH_APP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: finflow-backend-config
+                  key: UNLEASH_APP_NAME
+            - name: UNLEASH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: finflow-backend-secret
+                  key: UNLEASH_TOKEN

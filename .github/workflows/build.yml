@@ -17,7 +17,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 🚀 Subimos a Go 1.25 para que compile SQLite y Unleash sin quejas
+      # 🚀 Subimos a Go 1.25 para que compile pgx (Postgres driver) y Unleash sin quejas
       - name: Set up Go
         uses: actions/setup-go@v5
         with:

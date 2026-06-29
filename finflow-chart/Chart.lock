@@ -4,6 +4,6 @@ dependencies:
   version: 2.41.0
 - name: finflow-infra
   repository: oci://ghcr.io/josiastomasnanez
-  version: 1.0.2
-digest: sha256:9ff761c05cd6e13304b2cc48f9d306961c999cf8f843a89c0498e7338b73c11b
-generated: "2026-06-28T17:00:11.805043615-03:00"
+  version: 1.0.3
+digest: sha256:179fd51768eecf533b4c73407d0088c49162829757afa34526df2c5dc29c0d0f
+generated: "2026-06-28T23:53:24.235370117-03:00"

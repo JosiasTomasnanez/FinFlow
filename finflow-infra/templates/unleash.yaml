@@ -120,7 +120,10 @@ spec:
             - name: BYPASS_WWW_AUTH_FOR_TESTING
               value: "true"
             - name: INIT_ADMIN_API_TOKENS
-              value: "*:*.MasterAdminTokenSeguro123,*:*.4722f1994fdab39c87f92efd6d698ad65bf219bc3bcea60ec4bf052c,*:*.b641599d0bb2d6a898c05e31891f15dae0ef348397a8f17b1834048d"
+              value: "*:*.MasterAdminTokenSeguro123,*:development.ab019863e72c308331b4cd4c2f0178670353e4e4b6e1d30b5a0ddc31,*:production.55d7d23c5ec80c0c6c061422bcc899320d06dc077523ab62027580c9"
+
+            - name: INIT_FEATURES
+              value: '[{"name":"login-feature-flag","description":"Controla el acceso al nuevo modulo de login","type":"release","enabled":true,"stale":false}]'
 ---
 apiVersion: v1
 kind: Service

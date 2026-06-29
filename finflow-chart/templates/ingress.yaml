@@ -5,7 +5,8 @@ metadata:
 spec:
   ingressClassName: traefik 
   rules:
-    - host: "{{ .Values.ingress.host }}" 
+    # 1. Frontend y Backend
+    - host: "{{ .Values.ingress.host | default "finflow.local" }}" 
       http:
         paths:
           - path: /api
@@ -23,7 +24,8 @@ spec:
                 port:
                   number: 3000
 
-    - host: "unleash.finflow.local" 
+    # 2. Unleash
+    - host: "{{ .Values.ingress.unleashHost | default "unleash.finflow.local" }}" 
       http:
         paths:
           - path: /
@@ -38,7 +40,8 @@ spec:
                 port:
                   number: 4242
 
-    - host: "{{ .Values.ingress.grafanaHost }}" 
+    # 3. Grafana
+    - host: "{{ .Values.ingress.grafanaHost | default "grafana.finflow.local" }}" 
       http:
         paths:
           - path: /

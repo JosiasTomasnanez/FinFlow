@@ -12,6 +12,7 @@ backend:
     steps:
       - setWeight: 33
       - pause: {}
+
 database:
   user: finflow_prod_user
   password: ContrasenaMegaUltraSegura456
@@ -22,13 +23,14 @@ frontend:
   replicas: 3
   image:
     repository: josiastomasnanez/finflow-frontend
-    tag: v3
-  apiUrl: "http://prod.finflow.local:8081/api"
+    tag: v4
+  apiUrl: "http://prod.54.214.12.34.nip.io/api"
   argoStrategy:
     steps:
       - setWeight: 33
       - pause: {}
 
+# === AQUÍ EL CAMBIO CLAVE PARA TU SUBCHART ===
 finflow-infra:
   backend:
     unleashToken: "*:production.55d7d23c5ec80c0c6c061422bcc899320d06dc077523ab62027580c9"
@@ -40,8 +42,9 @@ finflow-infra:
       storageSize: 3Gi
 
 ingress:
-  host: "prod.finflow.local"
-  grafanaHost: "grafana.finflow.local"
+  host: "prod.54.214.12.34.nip.io"
+  unleashHost: "unleash.54.214.12.34.nip.io"
+  grafanaHost: "grafana.54.214.12.34.nip.io"
 
 argo-rollouts:
   installCRDs: false

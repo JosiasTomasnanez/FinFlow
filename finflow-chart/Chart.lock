@@ -1,0 +1,9 @@
+dependencies:
+- name: argo-rollouts
+  repository: https://argoproj.github.io/argo-helm
+  version: 2.41.0
+- name: finflow-infra
+  repository: oci://ghcr.io/josiastomasnanez
+  version: 1.0.2
+digest: sha256:9ff761c05cd6e13304b2cc48f9d306961c999cf8f843a89c0498e7338b73c11b
+generated: "2026-06-28T17:00:11.805043615-03:00"

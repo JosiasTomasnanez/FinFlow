@@ -1,19 +1,19 @@
-{{- if eq .Release.Name "finflow-staging" }}
 apiVersion: v1
 kind: Secret
 metadata:
   name: {{ .Release.Name }}-unleash-secret
+  namespace: {{ .Release.Namespace }}
 type: Opaque
 stringData:
   postgres-user: "{{ .Values.unleash.db.user }}"
   postgres-password: "{{ .Values.unleash.db.password }}"
   postgres-db: "{{ .Values.unleash.db.name }}"
-  unleash-token: "{{ .Values.backend.unleashToken }}"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-unleash-db-pvc
+  namespace: {{ .Release.Namespace }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -25,6 +25,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-unleash-db
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
@@ -68,6 +69,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}-unleash-db
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     app: {{ .Release.Name }}-unleash-db
@@ -80,6 +82,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-unleash-web
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
@@ -119,11 +122,14 @@ spec:
               value: "false"
             - name: BYPASS_WWW_AUTH_FOR_TESTING
               value: "true"
+            
+            # 1. TOKEN DE ADMINISTRACIÓN (Se lee de su nueva ruta limpia)
             - name: INIT_ADMIN_API_TOKENS
-              value: "*:*.{{ .Values.unleash.adminToken | default "MasterAdminTokenSeguro123" }}"
-            # CORREGIDO: Apunta de forma segura a finflow-infra.backend.unleashToken
+              value: "*:*.{{ .Values.unleash.adminToken }}"
+            
+            # 2. TOKENS CLIENTE (Inyecta Staging y Prod separados por comas)
             - name: INIT_CLIENT_API_TOKENS
-              value: "{{ .Values.backend.unleashToken }}"
+              value: "{{ .Values.unleash.tokens.staging }},{{ .Values.unleash.tokens.production }}"
 
             - name: INIT_FEATURES
               value: '[{"name":"login-feature-flag","description":"Controla el acceso al nuevo modulo de login","type":"release","enabled":true,"stale":false}]'
@@ -132,6 +138,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: unleash-web
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     app: {{ .Release.Name }}-unleash-web
@@ -139,14 +146,3 @@ spec:
     - port: 4242
       targetPort: 4242
   type: ClusterIP
-{{- else }}
-apiVersion: v1
-kind: Service
-metadata:
-  name: unleash-central-bridge-service
-spec:
-  type: ExternalName
-  externalName: unleash-web.finflow-staging.svc.cluster.local
-  ports:
-    - port: 4242
-{{- end }}

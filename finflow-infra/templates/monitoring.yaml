@@ -46,11 +46,13 @@ data:
           - role: endpoints
             namespaces:
               names:
-                - {{ .Release.Namespace }}
+                {{- range .Values.prometheus.monitoredNamespaces }}
+                - {{ . }}
+                {{- end }}
         relabel_configs:
           - source_labels: [__meta_kubernetes_service_name]
             action: keep
-            regex: {{ .Release.Name }}-app-service
+            regex: .*-app-service
           - source_labels: [__meta_kubernetes_pod_container_port_number]
             action: keep
             regex: "8080"

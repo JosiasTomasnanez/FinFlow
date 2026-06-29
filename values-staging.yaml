@@ -31,5 +31,5 @@ frontend:
       - pause: {} 
 
 ingress:
+  enabled: true
   host: "staging.finflow.local"
-  grafanaHost: "grafana-staging.finflow.local"

@@ -35,4 +35,5 @@ frontend:
 
 ingress:
   host: "prod.finflow.local"
-  grafanaHost: "grafana.finflow.local"
+  enabled: true
+

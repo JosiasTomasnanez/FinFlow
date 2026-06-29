@@ -36,4 +36,4 @@ frontend:
 ingress:
   host: "prod.54.214.12.34.nip.io"
   unleashHost: "unleash.54.214.12.34.nip.io"
-  grafanaHost: "grafana.54.214.12.34.nip.io"
+  enabled: true

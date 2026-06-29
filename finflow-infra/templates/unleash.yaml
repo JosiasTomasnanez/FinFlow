@@ -1,3 +1,4 @@
+{{- if .Values.unleash }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -122,15 +123,10 @@ spec:
               value: "false"
             - name: BYPASS_WWW_AUTH_FOR_TESTING
               value: "true"
-            
-            # 1. TOKEN DE ADMINISTRACIÓN (Se lee de su nueva ruta limpia)
             - name: INIT_ADMIN_API_TOKENS
               value: "*:*.{{ .Values.unleash.adminToken }}"
-            
-            # 2. TOKENS CLIENTE (Inyecta Staging y Prod separados por comas)
             - name: INIT_CLIENT_API_TOKENS
               value: "{{ .Values.unleash.tokens.staging }},{{ .Values.unleash.tokens.production }}"
-
             - name: INIT_FEATURES
               value: '[{"name":"login-feature-flag","description":"Controla el acceso al nuevo modulo de login","type":"release","enabled":true,"stale":false}]'
 ---
@@ -146,3 +142,4 @@ spec:
     - port: 4242
       targetPort: 4242
   type: ClusterIP
+{{- end }}

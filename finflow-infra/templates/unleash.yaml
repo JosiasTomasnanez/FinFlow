@@ -121,6 +121,7 @@ spec:
               value: "true"
             - name: INIT_ADMIN_API_TOKENS
               value: "*:*.{{ .Values.unleash.adminToken | default "MasterAdminTokenSeguro123" }}"
+            # CORREGIDO: Apunta de forma segura a finflow-infra.backend.unleashToken
             - name: INIT_CLIENT_API_TOKENS
               value: "{{ .Values.backend.unleashToken }}"
 

@@ -10,5 +10,5 @@ dependencies:
     repository: "https://argoproj.github.io/argo-helm"
 
   - name: finflow-infra
-    version: 1.0.3
+    version: 1.0.4
     repository: "oci://ghcr.io/josiastomasnanez"

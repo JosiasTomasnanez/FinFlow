@@ -11,4 +11,5 @@ dependencies:
 
   - name: finflow-infra
     version: 1.0.5
-    repository: "oci://ghcr.io/josiastomasnanez"
+    repository: ""                     
+    condition: finflow-infra.enabled    

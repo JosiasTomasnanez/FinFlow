@@ -1,3 +1,4 @@
+{{- if .Values.backend }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -40,3 +41,4 @@ spec:
   selector:
     app: {{ .Release.Name }}-redis
   type: ClusterIP
+{{- end }}

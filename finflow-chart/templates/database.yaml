@@ -1,3 +1,4 @@
+{{- if .Values.database }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -73,3 +74,4 @@ spec:
     - port: 5432
       targetPort: 5432
   type: ClusterIP
+{{- end }}

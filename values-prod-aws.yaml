@@ -1,3 +1,6 @@
+argo-rollouts:
+  installCRDs: false
+
 backend:
   replicas: 3
   port: 8080
@@ -12,6 +15,14 @@ backend:
     steps:
       - setWeight: 33
       - pause: {}
+
+unleash:
+  adminToken: "MasterAdminTokenProdAWS456"
+  db:
+    user: admin_prod_devops
+    password: PasswordMegaSeguroUnleashProd432
+    name: unleash_prod_db
+    storageSize: 3Gi
 
 database:
   user: finflow_prod_user
@@ -30,21 +41,11 @@ frontend:
       - setWeight: 33
       - pause: {}
 
-# === AQUÍ EL CAMBIO CLAVE PARA TU SUBCHART ===
 finflow-infra:
   backend:
     unleashToken: "*:production.55d7d23c5ec80c0c6c061422bcc899320d06dc077523ab62027580c9"
-  unleash:
-    db:
-      user: admin_prod_devops
-      password: PasswordMegaSeguroUnleashProd432
-      name: unleash_prod_db
-      storageSize: 3Gi
 
 ingress:
   host: "prod.54.214.12.34.nip.io"
   unleashHost: "unleash.54.214.12.34.nip.io"
   grafanaHost: "grafana.54.214.12.34.nip.io"
-
-argo-rollouts:
-  installCRDs: false

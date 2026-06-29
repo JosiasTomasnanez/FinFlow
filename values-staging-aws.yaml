@@ -13,6 +13,14 @@ backend:
       - setWeight: 33
       - pause: {}
 
+unleash:
+  adminToken: "MasterAdminTokenStagingAWS123"
+  db:
+    user: admin_staging_devops
+    password: PasswordStagingSeguro987
+    name: unleash_staging_db
+    storageSize: 1Gi
+
 database:
   user: finflow_user
   password: SuperPasswordSegura123
@@ -24,22 +32,15 @@ frontend:
   image:
     repository: josiastomasnanez/finflow-frontend
     tag: v3
-  apiUrl: "http://staging.54.214.12.34.nip.io/api" 
+  apiUrl: "http://staging.54.214.12.34.nip.io/api"  
   argoStrategy:
     steps:
       - setWeight: 33
       - pause: {} 
 
-# === AQUÍ EL CAMBIO CLAVE PARA TU SUBCHART ===
 finflow-infra:
   backend:
     unleashToken: "*:development.ab019863e72c308331b4cd4c2f0178670353e4e4b6e1d30b5a0ddc31"
-  unleash:
-    db:
-      user: admin_staging_devops
-      password: PasswordStagingSeguro987
-      name: unleash_staging_db
-      storageSize: 1Gi
 
 ingress:
   host: "staging.54.214.12.34.nip.io"

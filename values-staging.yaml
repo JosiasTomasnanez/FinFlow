@@ -12,6 +12,15 @@ backend:
     steps:
       - setWeight: 33
       - pause: {}
+
+unleash:
+  adminToken: "MasterAdminTokenStagingLocal123"
+  db:
+    user: admin_staging_devops
+    password: PasswordStagingSeguro987
+    name: unleash_staging_db
+    storageSize: 1Gi
+
 database:
   user: finflow_user
   password: SuperPasswordSegura123
@@ -32,13 +41,6 @@ frontend:
 finflow-infra:
   backend:
     unleashToken: "*:development.ab019863e72c308331b4cd4c2f0178670353e4e4b6e1d30b5a0ddc31"
-  
-  unleash:
-    db:
-      user: admin_staging_devops
-      password: PasswordStagingSeguro987
-      name: unleash_staging_db
-      storageSize: 1Gi
 
 ingress:
   host: "staging.finflow.local"

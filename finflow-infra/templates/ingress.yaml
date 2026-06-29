@@ -1,0 +1,31 @@
+{{- if .Values.prometheus }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: finflow-infra-ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: "unleash.finflow.local"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-unleash-web
+                port:
+                  number: 4242
+
+    - host: "grafana.finflow.local"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-grafana-service
+                port:
+                  number: 3000
+{{- end }}

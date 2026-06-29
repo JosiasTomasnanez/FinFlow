@@ -5,16 +5,16 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  sources:                           # <-- Cambiamos 'source' por 'sources' (en plural)
+  sources:                           
     - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
       targetRevision: main
-      ref: root                      # <-- Le ponemos un alias a la raíz del proyecto
+      ref: root                      
     - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
       targetRevision: main
-      path: finflow-chart            # <-- La carpeta del chart principal
+      path: finflow-chart            
       helm:
         valueFiles:
-          - $root/values-infra.yaml  # <-- Usamos el alias para buscar el archivo en la raíz real
+          - $root/values-infra.yaml 
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: finflow-infra

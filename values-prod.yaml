@@ -34,6 +34,5 @@ frontend:
       - pause: {}
 
 ingress:
-  host: "prod.finflow.local"
   enabled: true
-
+  host: "prod.finflow.local"

@@ -1,13 +1,17 @@
-{{- if .Values.prometheus }}
+{{- if and .Values.ingress .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: finflow-infra-ingress
   namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- if .Values.ingress.annotations }}
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- end }}
 spec:
-  ingressClassName: traefik
+  ingressClassName: {{ .Values.ingress.className | default "traefik" }}
   rules:
-    - host: "unleash.finflow.local"
+    - host: {{ index .Values "ingress" "hosts" "unleash" | default "unleash.finflow.local" }}
       http:
         paths:
           - path: /
@@ -17,8 +21,7 @@ spec:
                 name: unleash-web
                 port:
                   number: 4242
-
-    - host: "grafana.finflow.local"
+    - host: {{ index .Values "ingress" "hosts" "grafana" | default "grafana.finflow.local" }}
       http:
         paths:
           - path: /

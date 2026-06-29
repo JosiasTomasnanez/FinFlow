@@ -26,7 +26,7 @@ frontend:
   replicas: 3
   image:
     repository: josiastomasnanez/finflow-frontend
-    tag: v4
+    tag: v3
   apiUrl: "http://prod.54.214.12.34.nip.io/api"
   argoStrategy:
     steps:
@@ -34,6 +34,11 @@ frontend:
       - pause: {}
 
 ingress:
-  host: "prod.54.214.12.34.nip.io"
-  unleashHost: "unleash.54.214.12.34.nip.io"
   enabled: true
+  className: "alb"
+  host: "prod.54.214.12.34.nip.io"
+  annotations:
+    alb.ingress.kubernetes.io/group.name: finflow-prod-group
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'

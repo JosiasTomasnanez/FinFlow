@@ -1,14 +1,18 @@
-unleash:
-  adminToken: "MasterAdminTokenCentral2026"
-  db:
-    user: admin_infra_devops
-    password: PasswordMegaSeguroInfraCentral998
-    name: unleash_central_db
-    storageSize: 3Gi
-  tokens:
-    staging: "*:development.ab019863e72c308331b4cd4c2f0178670353e4e4b6e1d30b5a0ddc31"
-    production: "*:production.55d7d23c5ec80c0c6c061422bcc899320d06dc077523ab62027580c9"
-prometheus:
-  monitoredNamespaces:
-    - finflow-staging
-    - finflow-prod
+finflow-infra:
+  enabled: true
+
+  unleash:
+    adminToken: "MasterAdminTokenCentral2026"
+    db:
+      user: admin_infra_devops
+      password: PasswordMegaSeguroInfraCentral998
+      name: unleash_central_db
+      storageSize: 3Gi
+    tokens:
+      staging: "*:development.ab019863e72c308331b4cd4c2f0178670353e4e4b6e1d30b5a0ddc31"
+      production: "*:production.55d7d23c5ec80c0c6c061422bcc899320d06dc077523ab62027580c9"
+
+  prometheus:
+    monitoredNamespaces:
+      - finflow-staging
+      - finflow-prod

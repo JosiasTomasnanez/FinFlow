@@ -13,6 +13,7 @@ backend:
       - setWeight: 33
       - pause: {}
 
+# 1. Copia en la raíz para dar soporte al contexto global
 unleash:
   adminToken: "MasterAdminTokenStagingLocal123"
   db:
@@ -41,6 +42,13 @@ frontend:
 finflow-infra:
   backend:
     unleashToken: "*:development.ab019863e72c308331b4cd4c2f0178670353e4e4b6e1d30b5a0ddc31"
+  unleash:
+    adminToken: "MasterAdminTokenStagingLocal123"
+    db:
+      user: admin_staging_devops
+      password: PasswordStagingSeguro987
+      name: unleash_staging_db
+      storageSize: 1Gi
 
 ingress:
   host: "staging.finflow.local"

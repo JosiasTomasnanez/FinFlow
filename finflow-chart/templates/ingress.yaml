@@ -5,12 +5,10 @@ metadata:
   name: {{ .Release.Name }}-app-ingress
   namespace: {{ .Release.Namespace }}
   annotations:
-    # Si hay annotations personalizadas las renderiza, sino no pone nada
     {{- if .Values.ingress.annotations }}
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
     {{- end }}
 spec:
-  # Ahora solo renderiza el className si viene explícito en los values
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}

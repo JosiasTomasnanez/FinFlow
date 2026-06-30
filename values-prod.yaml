@@ -27,7 +27,7 @@ frontend:
   image:
     repository: josiastomasnanez/finflow-frontend
     tag: v3
-  apiUrl: "http://prod.finflow.local:8081/api"
+  apiUrl: "http://prod.finflow.local/api"
   argoStrategy:
     steps:
       - setWeight: 33
@@ -35,4 +35,5 @@ frontend:
 
 ingress:
   enabled: true
+  className: "traefik" # <-- AGREGADO para tu clúster local
   host: "prod.finflow.local"

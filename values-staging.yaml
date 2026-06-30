@@ -24,7 +24,7 @@ frontend:
   image:
     repository: josiastomasnanez/finflow-frontend
     tag: v3
-  apiUrl: "http://staging.finflow.local:8081/api" 
+  apiUrl: "http://staging.finflow.local/api" 
   argoStrategy:
     steps:
       - setWeight: 33
@@ -32,4 +32,5 @@ frontend:
 
 ingress:
   enabled: true
+  className: "traefik" 
   host: "staging.finflow.local"

@@ -10,11 +10,9 @@ metadata:
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
     {{- end }}
 spec:
-  # Si no se define un className, por defecto usa 'alb' para AWS (tu local usa values)
+  # Ahora solo renderiza el className si viene explícito en los values
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
-  {{- else }}
-  ingressClassName: "alb"
   {{- end }}
   rules:
     - host: {{ .Values.ingress.host | default "finflow.local" }}

@@ -33,35 +33,37 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}-postgres-db
-    spec:
-      containers:
-        - name: postgres
-          image: postgres:15-alpine
-          ports:
-            - containerPort: 5432
-          env:
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-postgres-secret
-                  key: postgres-user
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-postgres-secret
-                  key: postgres-password
-            - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-postgres-secret
-                  key: postgres-db
-          volumeMounts:
-            - name: postgres-storage
-              mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: postgres-storage
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-postgres-pvc
+  spec:
+    containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+          - containerPort: 5432
+        env:
+          - name: PGDATA                                    # <--- ¡NUEVA!
+            value: /var/lib/postgresql/data/pgdata          # <--- ¡NUEVA!
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-postgres-secret
+                key: postgres-user
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-postgres-secret
+                key: postgres-password
+          - name: POSTGRES_DB
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-postgres-secret
+                key: postgres-db
+        volumeMounts:
+          - name: postgres-storage
+            mountPath: /var/lib/postgresql/data
+    volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-postgres-pvc
 ---
 apiVersion: v1
 kind: Service

@@ -14,7 +14,7 @@ spec:
       path: finflow-chart            
       helm:
         valueFiles:
-          - $root/values-infra.aws.yaml 
+          - $root/values-infra-aws.yaml 
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: finflow-infra

@@ -33,37 +33,37 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}-postgres-db
-  spec:
-    containers:
-      - name: postgres
-        image: postgres:15-alpine
-        ports:
-          - containerPort: 5432
-        env:
-          - name: PGDATA                                    # <--- ¡NUEVA!
-            value: /var/lib/postgresql/data/pgdata          # <--- ¡NUEVA!
-          - name: POSTGRES_USER
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-postgres-secret
-                key: postgres-user
-          - name: POSTGRES_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-postgres-secret
-                key: postgres-password
-          - name: POSTGRES_DB
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-postgres-secret
-                key: postgres-db
-        volumeMounts:
-          - name: postgres-storage
-            mountPath: /var/lib/postgresql/data
-    volumes:
-      - name: postgres-storage
-        persistentVolumeClaim:
-          claimName: {{ .Release.Name }}-postgres-pvc
+    spec: # <--- ¡Acá estaba el error! Ahora está bien alineado con metadata
+      containers: # <--- Alineado con 6 espacios
+        - name: postgres # <--- Alineado con 8 espacios
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgres-secret
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgres-secret
+                  key: postgres-password
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgres-secret
+                  key: postgres-db
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+      volumes: # <--- Al mismo nivel de containers (6 espacios)
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-postgres-pvc
 ---
 apiVersion: v1
 kind: Service

@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: finflow-infra
+  namespace: argocd
+spec:
+  project: default
+  sources:                           
+    - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
+      targetRevision: main
+      ref: root                      
+    - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
+      targetRevision: main
+      path: finflow-chart            
+      helm:
+        valueFiles:
+          - $root/values-infra.aws.yaml 
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: finflow-infra
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -9,7 +9,11 @@ metadata:
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
     {{- end }}
 spec:
-  ingressClassName: {{ .Values.ingress.className | default (if hasKey .Values "aws" "alb" "traefik") }}
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- else }}
+  ingressClassName: "alb"
+  {{- end }}
   rules:
     - host: {{ index .Values "ingress" "hosts" "unleash" | default "unleash.finflow.local" }}
       http:

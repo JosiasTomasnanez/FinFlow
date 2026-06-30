@@ -24,8 +24,7 @@ frontend:
   image:
     repository: josiastomasnanez/finflow-frontend
     tag: v3
-  # Apunta al path /api del balanceador de Staging
-  apiUrl: "http://k8s-finflowstaginggro-2d1f40137d-1735931967.us-east-1.elb.amazonaws.com/api"
+  apiUrl: "http://app.54.88.99.100.nip.io/api"
   argoStrategy:
     steps:
       - setWeight: 33
@@ -34,8 +33,7 @@ frontend:
 ingress:
   enabled: true
   className: "alb"
-  # El Host que el ALB de Staging va a escuchar
-  host: "k8s-finflowstaginggro-2d1f40137d-1735931967.us-east-1.elb.amazonaws.com"
+  host: "app.54.88.99.100.nip.io"
   annotations:
     alb.ingress.kubernetes.io/group.name: finflow-staging-group
     alb.ingress.kubernetes.io/scheme: internet-facing

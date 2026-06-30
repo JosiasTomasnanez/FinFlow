@@ -7,7 +7,9 @@ spec:
   scaleTargetRef:
     apiVersion: argoproj.io/v1alpha1
     kind: Rollout
-    name: {{ .Release.Name }}-app 
+    name: {{ .Release.Name }}-app
+    # 🚀 ESTA LÍNEA ES CRÍTICA PARA ARGO ROLLOUTS:
+    envSourceContainerName: finflow-backend # O el nombre del contenedor de Go dentro de tu rollout
   minReplicaCount: 1
   maxReplicaCount: 5
   cooldownPeriod: 300

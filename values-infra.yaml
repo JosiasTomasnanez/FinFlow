@@ -16,5 +16,10 @@ finflow-infra:
     monitoredNamespaces:
       - finflow-staging
       - finflow-prod
+
   ingress:
-    enabled: false
+    enabled: true
+    className: "traefik"
+    hosts:
+      unleash: "unleash.finflow.local"
+      grafana: "grafana.finflow.local"

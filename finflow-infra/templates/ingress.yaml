@@ -9,10 +9,9 @@ metadata:
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
     {{- end }}
 spec:
+  # Si se define en los values se usa, si no, se omite para que el clúster use su default
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
-  {{- else }}
-  ingressClassName: "alb"
   {{- end }}
   rules:
     - host: {{ index .Values "ingress" "hosts" "unleash" | default "unleash.finflow.local" }}

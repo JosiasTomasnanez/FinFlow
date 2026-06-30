@@ -8,8 +8,8 @@ spec:
     apiVersion: argoproj.io/v1alpha1
     kind: Rollout
     name: {{ .Release.Name }}-app
-    # 🚀 ESTA LÍNEA ES CRÍTICA PARA ARGO ROLLOUTS:
-    envSourceContainerName: finflow-backend # O el nombre del contenedor de Go dentro de tu rollout
+    # 🚀 CORREGIDO: KEDA ahora va a encontrar el contenedor sin problemas
+    envSourceContainerName: finflow-app
   minReplicaCount: 1
   maxReplicaCount: 5
   cooldownPeriod: 300

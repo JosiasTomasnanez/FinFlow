@@ -20,10 +20,10 @@ finflow-infra:
     enabled: true
     className: "alb"
     hosts:
-      unleash: "unleash.54.214.12.34.nip.io"
-      grafana: "grafana.54.214.12.34.nip.io"
+      unleash: "unleash.34.206.110.163.nip.io"
+      grafana: "grafana.34.206.110.163.nip.io"
     annotations:
-      alb.ingress.kubernetes.io/group.name: finflow-prod-group # <-- Se monta en el ALB de prod
+      alb.ingress.kubernetes.io/group.name: finflow-prod-group
       alb.ingress.kubernetes.io/scheme: internet-facing
       alb.ingress.kubernetes.io/target-type: ip
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'

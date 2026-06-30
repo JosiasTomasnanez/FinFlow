@@ -24,7 +24,7 @@ frontend:
   image:
     repository: josiastomasnanez/finflow-frontend
     tag: v3
-  apiUrl: "http://app.54.88.99.100.nip.io/api"
+  apiUrl: "http://k8s-finflowstaginggro-2d1f40137d-1735931967.us-east-1.elb.amazonaws.com/api"
   argoStrategy:
     steps:
       - setWeight: 33
@@ -33,7 +33,7 @@ frontend:
 ingress:
   enabled: true
   className: "alb"
-  host: "app.54.88.99.100.nip.io"
+  host: "k8s-finflowstaginggro-2d1f40137d-1735931967.us-east-1.elb.amazonaws.com"
   annotations:
     alb.ingress.kubernetes.io/group.name: finflow-staging-group
     alb.ingress.kubernetes.io/scheme: internet-facing

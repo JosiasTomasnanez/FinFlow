@@ -35,5 +35,5 @@ frontend:
 
 ingress:
   enabled: true
-  className: "traefik" # <-- AGREGADO para tu clúster local
+  className: "traefik"
   host: "prod.finflow.local"

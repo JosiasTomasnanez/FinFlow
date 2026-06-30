@@ -7,7 +7,7 @@ backend:
   databaseUrl: "postgresql://finflow_user:SuperPasswordSegura123@finflow-staging-postgres-service:5432/finflow_db?sslmode=disable"
   redisUrl: "redis://finflow-staging-redis-service:6339/0"
   unleashToken: "*:development.ab019863e72c308331b4cd4c2f0178670353e4e4b6e1d30b5a0ddc31"
-  unleashUrl: "http://unleash-web.finflow-infra.svc.cluster.local:4242/api" # <-- Conexión interna impecable
+  unleashUrl: "http://unleash-web.finflow-infra.svc.cluster.local:4242/api"
   argoStrategy:
     steps:
       - setWeight: 33
@@ -24,7 +24,8 @@ frontend:
   image:
     repository: josiastomasnanez/finflow-frontend
     tag: v3
-  apiUrl: "http://staging.54.214.12.34.nip.io/api"  
+  # Apunta al path /api del balanceador de Staging
+  apiUrl: "http://k8s-finflowstaginggro-2d1f40137d-1735931967.us-east-1.elb.amazonaws.com/api"
   argoStrategy:
     steps:
       - setWeight: 33
@@ -33,9 +34,10 @@ frontend:
 ingress:
   enabled: true
   className: "alb"
-  host: "staging.54.214.12.34.nip.io"
+  # El Host que el ALB de Staging va a escuchar
+  host: "k8s-finflowstaginggro-2d1f40137d-1735931967.us-east-1.elb.amazonaws.com"
   annotations:
-    alb.ingress.kubernetes.io/group.name: finflow-staging-group # <-- Su propio ALB para aislar pruebas
+    alb.ingress.kubernetes.io/group.name: finflow-staging-group
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'

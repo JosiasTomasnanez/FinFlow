@@ -27,7 +27,8 @@ frontend:
   image:
     repository: josiastomasnanez/finflow-frontend
     tag: v3
-  apiUrl: "http://prod.54.214.12.34.nip.io/api"
+  # Apunta directo al path /api del balanceador de AWS
+  apiUrl: "http://k8s-finflowprodgroup-be3700653a-750851949.us-east-1.elb.amazonaws.com/api"
   argoStrategy:
     steps:
       - setWeight: 33
@@ -36,7 +37,8 @@ frontend:
 ingress:
   enabled: true
   className: "alb"
-  host: "prod.54.214.12.34.nip.io"
+  # Le dice al AWS ALB que responda de forma nativa a su propio DNS público
+  host: "k8s-finflowprodgroup-be3700653a-750851949.us-east-1.elb.amazonaws.com"
   annotations:
     alb.ingress.kubernetes.io/group.name: finflow-prod-group
     alb.ingress.kubernetes.io/scheme: internet-facing

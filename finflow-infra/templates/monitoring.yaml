@@ -129,6 +129,8 @@ spec:
       labels:
         app: {{ .Release.Name }}-grafana
     spec:
+      securityContext:      # <--- ¡CORRECCIÓN ACÁ! Le da la propiedad del volumen al grupo de Grafana
+        fsGroup: 472        # <--- ID de grupo oficial de Grafana
       containers:
         - name: grafana
           image: grafana/grafana-oss:latest

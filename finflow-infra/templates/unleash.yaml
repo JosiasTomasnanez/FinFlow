@@ -43,6 +43,8 @@ spec:
           ports:
             - containerPort: 5432
           env:
+            - name: PGDATA                                  # <--- ¡AGREGADA!
+              value: /var/lib/postgresql/data/pgdata        # <--- ¡AGREGADA!
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:

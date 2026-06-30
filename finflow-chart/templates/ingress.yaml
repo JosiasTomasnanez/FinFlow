@@ -11,7 +11,7 @@ metadata:
     {{- end }}
 spec:
   # Si no se define un className, por defecto usa 'traefik' (ideal para tu local)
-  ingressClassName: {{ .Values.ingress.className | default "traefik" }}
+  ingressClassName: {{ .Values.ingress.className | default (if hasKey .Values "aws" "alb" "traefik") }}
   rules:
     - host: {{ .Values.ingress.host | default "finflow.local" }}
       http:

@@ -9,7 +9,6 @@ spec:
     apiVersion: argoproj.io/v1alpha1
     kind: Rollout
     name: {{ .Release.Name }}-app
-    # 🚀 PARCHE 1: Nombre correcto del contenedor para que KEDA lo encuentre
     envSourceContainerName: finflow-app
   minReplicaCount: 1
   maxReplicaCount: 5
@@ -17,7 +16,6 @@ spec:
   triggers:
   - type: prometheus
     metadata:
-      # 🚀 PARCHE 2: URL corregida agregando "-service" para el DNS de Kubernetes
       serverAddress: http://finflow-infra-prometheus-service.finflow-infra.svc.cluster.local:9090
       metricName: http_requests_total
       query: sum(rate(http_requests_total{app="{{ .Release.Name }}-app"}[2m]))

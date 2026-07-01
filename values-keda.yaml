@@ -1,0 +1,19 @@
+resources:
+  operator:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+prometheus:
+  operator:
+    enabled: false
+rbac:
+  customRules:
+    - apiGroups: ["argoproj.io"]
+      resources: ["rollouts", "rollouts/scale", "rollouts/status"]
+      verbs: ["get", "list", "watch", "update", "patch"]
+
+metricsServer:
+  openshift: false

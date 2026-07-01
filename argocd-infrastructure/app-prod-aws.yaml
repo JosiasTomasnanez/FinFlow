@@ -19,10 +19,3 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - RespectIgnoreDifferences=true
-
-  ignoreDifferences:
-    - group: argoproj.io
-      kind: Rollout
-      name: finflow-prod-app
-      jsonPointers:
-        - /spec/replicas

@@ -59,6 +59,23 @@ data:
             regex: "8080"
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
+
+      # 🚀 PARCHE: Agregamos a KEDA para que Prometheus recolecte sus métricas internas
+      - job_name: 'keda-operator'
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - {{ .Release.Namespace }}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name]
+            action: keep
+            regex: keda-operator-metrics-apiserver
+          - source_labels: [__meta_kubernetes_pod_container_port_number]
+            action: keep
+            regex: "8080|443"
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -129,8 +146,8 @@ spec:
       labels:
         app: {{ .Release.Name }}-grafana
     spec:
-      securityContext:      # <--- ¡CORRECCIÓN ACÁ! Le da la propiedad del volumen al grupo de Grafana
-        fsGroup: 472        # <--- ID de grupo oficial de Grafana
+      securityContext:      
+        fsGroup: 472        
       containers:
         - name: grafana
           image: grafana/grafana-oss:latest

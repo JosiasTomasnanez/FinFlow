@@ -10,12 +10,7 @@ resources:
 
 prometheus:
   operator:
-    enabled: false  
-  metrics:
-    podMonitor:
-      enabled: true
-      additionalLabels:
-        release: finflow-infra-prometheus
+    enabled: false
 
 rbac:
   customRules:

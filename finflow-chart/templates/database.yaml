@@ -16,7 +16,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ebs-sc # <--- AGREGA ESTO PARA APUNTAR A TU STORAGECLASS CORREGIDA
+  storageClassName: ebs-sc 
   resources:
     requests:
       storage: {{ .Values.database.storageSize }} 
@@ -37,16 +37,16 @@ spec:
       labels:
         app: {{ .Release.Name }}-postgres-db
     spec: 
-      nodeSelector: # <--- MOVIDO AL NIVEL CORRECTO (SPEC DEL POD)
+      nodeSelector: 
         tipo: BD 
-      tolerations: # <--- MOVIDO AL NIVEL CORRECTO (SPEC DEL POD)
+      tolerations: 
         - key: "tipo"
           operator: "Equal"
           value: "BD"
           effect: "NoSchedule" 
       containers:
         - name: postgres 
-          image: postgres:15-alpine # <--- Modifica acá el tag (ej: 16-alpine) si querés subir de versión
+          image: postgres:15-alpine 
           ports:
             - containerPort: 5432
           env:

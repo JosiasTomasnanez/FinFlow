@@ -16,6 +16,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: ebs-sc
   resources:
     requests:
       storage: {{ .Values.database.storageSize }} 

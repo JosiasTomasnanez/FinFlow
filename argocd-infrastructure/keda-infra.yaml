@@ -11,9 +11,10 @@ spec:
     targetRevision: 2.14.0 
     helm:
       valuesObject:
+        # 🚀 CAMBIAMOS ESTO A FALSE PARA QUE NO INSTALE EL AUTOSCALER POR DEFECTO:
         prometheus:
           operator:
-            enabled: true
+            enabled: false
         rbac:
           customRules:
             - apiGroups: ["argoproj.io"]
@@ -29,5 +30,4 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-      - Replace=true
       - SkipDryRunOnMissingResource=true

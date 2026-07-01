@@ -1,0 +1,805 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"argoproj.io/v1alpha1","kind":"Application","metadata":{"annotations":{},"name":"finflow-infra","namespace":"argocd"},"spec":{"destination":{"namespace":"finflow-infra","server":"https://kubernetes.default.svc"},"project":"default","sources":[{"ref":"root","repoURL":"https://github.com/josiastomasnanez/FinFlow.git","targetRevision":"main"},{"helm":{"valueFiles":["$root/values-infra-aws.yaml"]},"path":"finflow-chart","repoURL":"https://github.com/josiastomasnanez/FinFlow.git","targetRevision":"main"}],"syncPolicy":{"automated":{"prune":true,"selfHeal":true},"syncOptions":["CreateNamespace=true"]}}}
+  creationTimestamp: "2026-06-30T02:46:26Z"
+  generation: 458
+  name: finflow-infra
+  namespace: argocd
+  resourceVersion: "318012"
+  uid: 135137ba-b66d-46fe-aa8e-afd2738d9393
+spec:
+  destination:
+    namespace: finflow-infra
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+  - ref: root
+    repoURL: https://github.com/josiastomasnanez/FinFlow.git
+    targetRevision: main
+  - helm:
+      valueFiles:
+      - $root/values-infra-aws.yaml
+    path: finflow-chart
+    repoURL: https://github.com/josiastomasnanez/FinFlow.git
+    targetRevision: main
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+status:
+  controllerNamespace: argocd
+  health:
+    lastTransitionTime: "2026-07-01T00:13:49Z"
+    status: Degraded
+  history:
+  - deployStartedAt: "2026-06-30T23:26:47Z"
+    deployedAt: "2026-06-30T23:26:52Z"
+    id: 14
+    initiatedBy:
+      username: admin
+    revisions:
+    - dd62ade876b2cb1d728a301ce5482c7fa24fec6b
+    - dd62ade876b2cb1d728a301ce5482c7fa24fec6b
+    source:
+      repoURL: ""
+    sources:
+    - ref: root
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+    - helm:
+        valueFiles:
+        - $root/values-infra-aws.yaml
+      path: finflow-chart
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+  - deployStartedAt: "2026-06-30T23:33:45Z"
+    deployedAt: "2026-06-30T23:33:51Z"
+    id: 15
+    initiatedBy:
+      automated: true
+    revisions:
+    - 4505b50906526b6745d7582ed205c9e3d2669907
+    - 4505b50906526b6745d7582ed205c9e3d2669907
+    source:
+      repoURL: ""
+    sources:
+    - ref: root
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+    - helm:
+        valueFiles:
+        - $root/values-infra-aws.yaml
+      path: finflow-chart
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+  - deployStartedAt: "2026-06-30T23:39:25Z"
+    deployedAt: "2026-06-30T23:39:29Z"
+    id: 16
+    initiatedBy:
+      username: admin
+    revisions:
+    - 561194f557d8a1969f45b539f1b15a5590c8482a
+    - 561194f557d8a1969f45b539f1b15a5590c8482a
+    source:
+      repoURL: ""
+    sources:
+    - ref: root
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+    - helm:
+        valueFiles:
+        - $root/values-infra-aws.yaml
+      path: finflow-chart
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+  - deployStartedAt: "2026-06-30T23:46:00Z"
+    deployedAt: "2026-06-30T23:46:03Z"
+    id: 17
+    initiatedBy:
+      automated: true
+    revisions:
+    - f248dd6571964d88e903e6b67660a858de6c796b
+    - f248dd6571964d88e903e6b67660a858de6c796b
+    source:
+      repoURL: ""
+    sources:
+    - ref: root
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+    - helm:
+        valueFiles:
+        - $root/values-infra-aws.yaml
+      path: finflow-chart
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+  - deployStartedAt: "2026-06-30T23:54:46Z"
+    deployedAt: "2026-06-30T23:54:50Z"
+    id: 18
+    initiatedBy:
+      username: admin
+    revisions:
+    - f248dd6571964d88e903e6b67660a858de6c796b
+    - f248dd6571964d88e903e6b67660a858de6c796b
+    source:
+      repoURL: ""
+    sources:
+    - ref: root
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+    - helm:
+        valueFiles:
+        - $root/values-infra-aws.yaml
+      path: finflow-chart
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+  - deployStartedAt: "2026-07-01T00:03:33Z"
+    deployedAt: "2026-07-01T00:03:41Z"
+    id: 19
+    initiatedBy:
+      automated: true
+    revisions:
+    - 47f898e811773b24e1006f2fa758a333e2af6113
+    - 47f898e811773b24e1006f2fa758a333e2af6113
+    source:
+      repoURL: ""
+    sources:
+    - ref: root
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+    - helm:
+        valueFiles:
+        - $root/values-infra-aws.yaml
+      path: finflow-chart
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+  - deployStartedAt: "2026-07-01T00:08:18Z"
+    deployedAt: "2026-07-01T00:10:29Z"
+    id: 20
+    initiatedBy:
+      username: admin
+    revisions:
+    - 47f898e811773b24e1006f2fa758a333e2af6113
+    - 47f898e811773b24e1006f2fa758a333e2af6113
+    source:
+      repoURL: ""
+    sources:
+    - ref: root
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+    - helm:
+        valueFiles:
+        - $root/values-infra-aws.yaml
+      path: finflow-chart
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+  - deployStartedAt: "2026-07-01T00:15:03Z"
+    deployedAt: "2026-07-01T00:15:07Z"
+    id: 21
+    initiatedBy:
+      username: admin
+    revisions:
+    - 47f898e811773b24e1006f2fa758a333e2af6113
+    - 47f898e811773b24e1006f2fa758a333e2af6113
+    source:
+      repoURL: ""
+    sources:
+    - ref: root
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+    - helm:
+        valueFiles:
+        - $root/values-infra-aws.yaml
+      path: finflow-chart
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+  - deployStartedAt: "2026-07-01T00:19:12Z"
+    deployedAt: "2026-07-01T00:19:19Z"
+    id: 22
+    initiatedBy:
+      username: admin
+    revisions:
+    - b103c8df1612727d0da298c1b9f9664fce12901e
+    - b103c8df1612727d0da298c1b9f9664fce12901e
+    source:
+      repoURL: ""
+    sources:
+    - ref: root
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+    - helm:
+        valueFiles:
+        - $root/values-infra-aws.yaml
+      path: finflow-chart
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+  - deployStartedAt: "2026-07-01T00:24:17Z"
+    deployedAt: "2026-07-01T00:24:22Z"
+    id: 23
+    initiatedBy:
+      username: admin
+    revisions:
+    - b103c8df1612727d0da298c1b9f9664fce12901e
+    - b103c8df1612727d0da298c1b9f9664fce12901e
+    source:
+      repoURL: ""
+    sources:
+    - ref: root
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+    - helm:
+        valueFiles:
+        - $root/values-infra-aws.yaml
+      path: finflow-chart
+      repoURL: https://github.com/josiastomasnanez/FinFlow.git
+      targetRevision: main
+  operationState:
+    finishedAt: "2026-07-01T00:24:22Z"
+    message: successfully synced (all tasks run)
+    operation:
+      initiatedBy:
+        username: admin
+      retry: {}
+      sync:
+        revisions:
+        - b103c8df1612727d0da298c1b9f9664fce12901e
+        - b103c8df1612727d0da298c1b9f9664fce12901e
+        sources:
+        - ref: root
+          repoURL: https://github.com/josiastomasnanez/FinFlow.git
+          targetRevision: main
+        - helm:
+            valueFiles:
+            - $root/values-infra-aws.yaml
+          path: finflow-chart
+          repoURL: https://github.com/josiastomasnanez/FinFlow.git
+          targetRevision: main
+        syncOptions:
+        - CreateNamespace=true
+        syncStrategy:
+          hook: {}
+    phase: Succeeded
+    startedAt: "2026-07-01T00:24:17Z"
+    syncResult:
+      resources:
+      - group: ""
+        hookPhase: Running
+        kind: Namespace
+        message: namespace/finflow-infra unchanged
+        name: finflow-infra
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: ServiceAccount
+        message: serviceaccount/finflow-infra-prometheus-sa unchanged
+        name: finflow-infra-prometheus-sa
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: ServiceAccount
+        message: serviceaccount/finflow-infra-argo-rollouts unchanged
+        name: finflow-infra-argo-rollouts
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: Secret
+        message: secret/finflow-infra-unleash-secret configured
+        name: finflow-infra-unleash-secret
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: ConfigMap
+        message: configmap/finflow-infra-prometheus-config unchanged
+        name: finflow-infra-prometheus-config
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: ConfigMap
+        message: configmap/argo-rollouts-config configured
+        name: argo-rollouts-config
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: ConfigMap
+        message: configmap/argo-rollouts-notification-configmap configured
+        name: argo-rollouts-notification-configmap
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: PersistentVolumeClaim
+        message: persistentvolumeclaim/finflow-infra-unleash-db-pvc unchanged
+        name: finflow-infra-unleash-db-pvc
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: PersistentVolumeClaim
+        message: persistentvolumeclaim/finflow-infra-grafana-pvc unchanged
+        name: finflow-infra-grafana-pvc
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: apiextensions.k8s.io
+        hookPhase: Running
+        kind: CustomResourceDefinition
+        message: customresourcedefinition.apiextensions.k8s.io/analysistemplates.argoproj.io
+          unchanged
+        name: analysistemplates.argoproj.io
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: apiextensions.k8s.io
+        hookPhase: Running
+        kind: CustomResourceDefinition
+        message: customresourcedefinition.apiextensions.k8s.io/experiments.argoproj.io
+          unchanged
+        name: experiments.argoproj.io
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: apiextensions.k8s.io
+        hookPhase: Running
+        kind: CustomResourceDefinition
+        message: customresourcedefinition.apiextensions.k8s.io/clusteranalysistemplates.argoproj.io
+          unchanged
+        name: clusteranalysistemplates.argoproj.io
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: apiextensions.k8s.io
+        hookPhase: Running
+        kind: CustomResourceDefinition
+        message: customresourcedefinition.apiextensions.k8s.io/analysisruns.argoproj.io
+          unchanged
+        name: analysisruns.argoproj.io
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: apiextensions.k8s.io
+        hookPhase: Running
+        kind: CustomResourceDefinition
+        message: customresourcedefinition.apiextensions.k8s.io/rollouts.argoproj.io
+          unchanged
+        name: rollouts.argoproj.io
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: rbac.authorization.k8s.io
+        hookPhase: Running
+        kind: ClusterRole
+        message: clusterrole.rbac.authorization.k8s.io/finflow-infra-argo-rollouts-aggregate-to-edit
+          reconciled. clusterrole.rbac.authorization.k8s.io/finflow-infra-argo-rollouts-aggregate-to-edit
+          unchanged
+        name: finflow-infra-argo-rollouts-aggregate-to-edit
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: rbac.authorization.k8s.io
+        hookPhase: Running
+        kind: ClusterRole
+        message: clusterrole.rbac.authorization.k8s.io/finflow-infra-prometheus-cluster-role
+          reconciled. clusterrole.rbac.authorization.k8s.io/finflow-infra-prometheus-cluster-role
+          unchanged
+        name: finflow-infra-prometheus-cluster-role
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: rbac.authorization.k8s.io
+        hookPhase: Running
+        kind: ClusterRole
+        message: clusterrole.rbac.authorization.k8s.io/finflow-infra-argo-rollouts-aggregate-to-view
+          reconciled. clusterrole.rbac.authorization.k8s.io/finflow-infra-argo-rollouts-aggregate-to-view
+          unchanged
+        name: finflow-infra-argo-rollouts-aggregate-to-view
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: rbac.authorization.k8s.io
+        hookPhase: Running
+        kind: ClusterRole
+        message: clusterrole.rbac.authorization.k8s.io/finflow-infra-argo-rollouts
+          reconciled. clusterrole.rbac.authorization.k8s.io/finflow-infra-argo-rollouts
+          unchanged
+        name: finflow-infra-argo-rollouts
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: rbac.authorization.k8s.io
+        hookPhase: Running
+        kind: ClusterRole
+        message: clusterrole.rbac.authorization.k8s.io/finflow-infra-argo-rollouts-aggregate-to-admin
+          reconciled. clusterrole.rbac.authorization.k8s.io/finflow-infra-argo-rollouts-aggregate-to-admin
+          unchanged
+        name: finflow-infra-argo-rollouts-aggregate-to-admin
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: rbac.authorization.k8s.io
+        hookPhase: Running
+        kind: ClusterRoleBinding
+        message: clusterrolebinding.rbac.authorization.k8s.io/finflow-infra-argo-rollouts
+          reconciled. clusterrolebinding.rbac.authorization.k8s.io/finflow-infra-argo-rollouts
+          unchanged
+        name: finflow-infra-argo-rollouts
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: rbac.authorization.k8s.io
+        hookPhase: Running
+        kind: ClusterRoleBinding
+        message: clusterrolebinding.rbac.authorization.k8s.io/finflow-infra-prometheus-crb
+          reconciled. clusterrolebinding.rbac.authorization.k8s.io/finflow-infra-prometheus-crb
+          unchanged
+        name: finflow-infra-prometheus-crb
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: Service
+        message: service/finflow-infra-unleash-db unchanged
+        name: finflow-infra-unleash-db
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: Service
+        message: service/finflow-infra-prometheus-service unchanged
+        name: finflow-infra-prometheus-service
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: Service
+        message: service/unleash-web unchanged
+        name: unleash-web
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: ""
+        hookPhase: Running
+        kind: Service
+        message: service/finflow-infra-grafana-service unchanged
+        name: finflow-infra-grafana-service
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: apps
+        hookPhase: Running
+        images:
+        - quay.io/argoproj/argo-rollouts:v1.9.0
+        kind: Deployment
+        message: deployment.apps/finflow-infra-argo-rollouts configured
+        name: finflow-infra-argo-rollouts
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: apps
+        hookPhase: Running
+        images:
+        - prom/prometheus:latest
+        kind: Deployment
+        message: deployment.apps/finflow-infra-prometheus unchanged
+        name: finflow-infra-prometheus
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: apps
+        hookPhase: Running
+        images:
+        - grafana/grafana-oss:latest
+        kind: Deployment
+        message: deployment.apps/finflow-infra-grafana unchanged
+        name: finflow-infra-grafana
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: apps
+        hookPhase: Running
+        images:
+        - postgres:15-alpine
+        kind: Deployment
+        message: deployment.apps/finflow-infra-unleash-db unchanged
+        name: finflow-infra-unleash-db
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: apps
+        hookPhase: Running
+        images:
+        - unleashorg/unleash-server:latest
+        kind: Deployment
+        message: deployment.apps/finflow-infra-unleash-web unchanged
+        name: finflow-infra-unleash-web
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: networking.k8s.io
+        hookPhase: Running
+        kind: Ingress
+        message: ingress.networking.k8s.io/finflow-infra-ingress unchanged
+        name: finflow-infra-ingress
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1
+      - group: keda.sh
+        hookPhase: Running
+        kind: ScaledObject
+        message: scaledobject.keda.sh/finflow-infra-backend-autoscaler unchanged
+        name: finflow-infra-backend-autoscaler
+        namespace: finflow-infra
+        status: Synced
+        syncPhase: Sync
+        version: v1alpha1
+      revision: ""
+      revisions:
+      - b103c8df1612727d0da298c1b9f9664fce12901e
+      - b103c8df1612727d0da298c1b9f9664fce12901e
+      source:
+        repoURL: ""
+      sources:
+      - ref: root
+        repoURL: https://github.com/josiastomasnanez/FinFlow.git
+        targetRevision: main
+      - helm:
+          valueFiles:
+          - $root/values-infra-aws.yaml
+        path: finflow-chart
+        repoURL: https://github.com/josiastomasnanez/FinFlow.git
+        targetRevision: main
+  reconciledAt: "2026-07-01T00:24:22Z"
+  resourceHealthSource: appTree
+  resources:
+  - kind: ConfigMap
+    name: argo-rollouts-config
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - kind: ConfigMap
+    name: argo-rollouts-notification-configmap
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - kind: ConfigMap
+    name: finflow-infra-prometheus-config
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - kind: Namespace
+    name: finflow-infra
+    status: Synced
+    version: v1
+  - kind: PersistentVolumeClaim
+    name: finflow-infra-grafana-pvc
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - kind: PersistentVolumeClaim
+    name: finflow-infra-unleash-db-pvc
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - kind: Secret
+    name: finflow-infra-unleash-secret
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - kind: Service
+    name: finflow-infra-grafana-service
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - kind: Service
+    name: finflow-infra-prometheus-service
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - kind: Service
+    name: finflow-infra-unleash-db
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - kind: Service
+    name: unleash-web
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - kind: ServiceAccount
+    name: finflow-infra-argo-rollouts
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - kind: ServiceAccount
+    name: finflow-infra-prometheus-sa
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - group: apiextensions.k8s.io
+    kind: CustomResourceDefinition
+    name: analysisruns.argoproj.io
+    status: Synced
+    version: v1
+  - group: apiextensions.k8s.io
+    kind: CustomResourceDefinition
+    name: analysistemplates.argoproj.io
+    status: Synced
+    version: v1
+  - group: apiextensions.k8s.io
+    kind: CustomResourceDefinition
+    name: clusteranalysistemplates.argoproj.io
+    status: Synced
+    version: v1
+  - group: apiextensions.k8s.io
+    kind: CustomResourceDefinition
+    name: experiments.argoproj.io
+    status: Synced
+    version: v1
+  - group: apiextensions.k8s.io
+    kind: CustomResourceDefinition
+    name: rollouts.argoproj.io
+    status: Synced
+    version: v1
+  - group: apps
+    kind: Deployment
+    name: finflow-infra-argo-rollouts
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - group: apps
+    kind: Deployment
+    name: finflow-infra-grafana
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - group: apps
+    kind: Deployment
+    name: finflow-infra-prometheus
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - group: apps
+    kind: Deployment
+    name: finflow-infra-unleash-db
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - group: apps
+    kind: Deployment
+    name: finflow-infra-unleash-web
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - group: keda.sh
+    kind: ScaledObject
+    name: finflow-infra-backend-autoscaler
+    namespace: finflow-infra
+    status: Synced
+    version: v1alpha1
+  - group: networking.k8s.io
+    kind: Ingress
+    name: finflow-infra-ingress
+    namespace: finflow-infra
+    status: Synced
+    version: v1
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: finflow-infra-argo-rollouts
+    status: Synced
+    version: v1
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: finflow-infra-argo-rollouts-aggregate-to-admin
+    status: Synced
+    version: v1
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: finflow-infra-argo-rollouts-aggregate-to-edit
+    status: Synced
+    version: v1
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: finflow-infra-argo-rollouts-aggregate-to-view
+    status: Synced
+    version: v1
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: finflow-infra-prometheus-cluster-role
+    status: Synced
+    version: v1
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRoleBinding
+    name: finflow-infra-argo-rollouts
+    status: Synced
+    version: v1
+  - group: rbac.authorization.k8s.io
+    kind: ClusterRoleBinding
+    name: finflow-infra-prometheus-crb
+    status: Synced
+    version: v1
+  sourceHydrator: {}
+  sourceTypes:
+  - ""
+  - Helm
+  summary:
+    externalURLs:
+    - http://grafana.34.206.110.163.nip.io/
+    - http://unleash.34.206.110.163.nip.io/
+    images:
+    - grafana/grafana-oss:latest
+    - postgres:15-alpine
+    - prom/prometheus:latest
+    - quay.io/argoproj/argo-rollouts:v1.9.0
+    - unleashorg/unleash-server:latest
+  sync:
+    comparedTo:
+      destination:
+        namespace: finflow-infra
+        server: https://kubernetes.default.svc
+      source:
+        repoURL: ""
+      sources:
+      - ref: root
+        repoURL: https://github.com/josiastomasnanez/FinFlow.git
+        targetRevision: main
+      - helm:
+          valueFiles:
+          - $root/values-infra-aws.yaml
+        path: finflow-chart
+        repoURL: https://github.com/josiastomasnanez/FinFlow.git
+        targetRevision: main
+    revisions:
+    - b103c8df1612727d0da298c1b9f9664fce12901e
+    - b103c8df1612727d0da298c1b9f9664fce12901e
+    status: Synced

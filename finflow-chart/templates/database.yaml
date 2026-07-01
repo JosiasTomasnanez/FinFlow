@@ -33,9 +33,9 @@ spec:
     metadata:
       labels:
         app: {{ .Release.Name }}-postgres-db
-    spec: # <--- ¡Acá estaba el error! Ahora está bien alineado con metadata
-      containers: # <--- Alineado con 6 espacios
-        - name: postgres # <--- Alineado con 8 espacios
+    spec: 
+      containers:
+        - name: postgres 
           image: postgres:15-alpine
           ports:
             - containerPort: 5432
@@ -57,10 +57,17 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-postgres-secret
                   key: postgres-db
+          nodeSelector:
+            tipo: BD 
+          tolerations:
+            - key: "tipo"
+              operator: "Equal"
+              value: "BD"
+              effect: "NoSchedule" 
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
-      volumes: # <--- Al mismo nivel de containers (6 espacios)
+      volumes:
         - name: postgres-storage
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-postgres-pvc

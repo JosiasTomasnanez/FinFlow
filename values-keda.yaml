@@ -1,3 +1,4 @@
+# values-keda.yaml
 resources:
   operator:
     limits:
@@ -6,9 +7,16 @@ resources:
     requests:
       cpu: 100m
       memory: 256Mi
+
 prometheus:
   operator:
-    enabled: false
+    enabled: false  
+  metrics:
+    podMonitor:
+      enabled: true
+      additionalLabels:
+        release: finflow-infra-prometheus
+
 rbac:
   customRules:
     - apiGroups: ["argoproj.io"]

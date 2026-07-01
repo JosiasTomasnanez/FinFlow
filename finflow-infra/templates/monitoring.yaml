@@ -60,25 +60,24 @@ data:
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
 
-      # 🚀 PARCHE: Agregamos a KEDA para que Prometheus recolecte sus métricas internas
       - job_name: 'keda-operator'
         kubernetes_sd_configs:
           - role: endpoints
             namespaces:
               names:
-                - {{ .Release.Namespace }}
+                - {{ .Release.Namespace }} # finflow-infra
         relabel_configs:
           - source_labels: [__meta_kubernetes_service_name]
             action: keep
-            regex: keda-operator-metrics-apiserver
+            regex: keda-operator  # El servicio base generado por el chart de KEDA
           - source_labels: [__meta_kubernetes_pod_container_port_number]
             action: keep
-            regex: "8080|443"
+            regex: "8080"
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
           - action: replace
             target_label: job
-            replacement: keda-operator-metrics-apiserver
+            replacement: keda-operator
 ---
 apiVersion: apps/v1
 kind: Deployment

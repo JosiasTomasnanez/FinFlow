@@ -1,4 +1,3 @@
-# values-keda.yaml
 resources:
   operator:
     limits:
@@ -10,7 +9,11 @@ resources:
 
 prometheus:
   operator:
-    enabled: false
+    enabled: true
+    port: 8080
+  metricServer:
+    enabled: true
+    port: 9022
 
 rbac:
   customRules:

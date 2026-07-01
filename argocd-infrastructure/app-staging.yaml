@@ -24,6 +24,6 @@ spec:
   ignoreDifferences:
     - group: argoproj.io
       kind: Rollout
-      name: finflow-staging-app # <--- OJO ACÁ: asegurate de que el nombre del Rollout en staging sea este (o el que corresponda según tu template)
+      name: finflow-staging-app 
       jsonPointers:
         - /spec/replicas

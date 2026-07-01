@@ -76,6 +76,9 @@ data:
             regex: "8080|443"
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
+          - action: replace
+            target_label: job
+            replacement: keda-operator-metrics-apiserver
 ---
 apiVersion: apps/v1
 kind: Deployment

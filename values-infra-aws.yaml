@@ -13,6 +13,7 @@ finflow-infra:
 
   prometheus:
     monitoredNamespaces:
+      - finflow-infra
       - finflow-staging
       - finflow-prod
 

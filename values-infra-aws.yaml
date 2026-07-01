@@ -20,6 +20,7 @@ finflow-infra:
   ingress:
     enabled: true
     className: "alb"
+    controllerRoleArn: "arn:aws:iam::199667819856:role/aws-load-balancer-controller-role"
     hosts:
       unleash: "unleash.34.225.125.22.nip.io"
       grafana: "grafana.34.225.125.22.nip.io"

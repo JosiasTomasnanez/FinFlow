@@ -26,6 +26,8 @@ metadata:
   name: {{ .Release.Name }}-postgres-db
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: {{ .Release.Name }}-postgres-db

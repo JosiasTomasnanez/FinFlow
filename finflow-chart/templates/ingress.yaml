@@ -13,12 +13,13 @@ spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
   rules:
-    # Si se define un host en el values, se aplica. Si viene vacío, se omite la línea 'host' 
-    # permitiendo que el AWS ALB acepte cualquier petición sin importar el dominio/DNS.
-    - {{ - if .Values.ingress.host }}
-      host: {{ .Values.ingress.host }}
-      {{- end }}
+    # CORREGIDO: Sin el espacio entre '{' y '-'
+    {{- if .Values.ingress.host }}
+    - host: {{ .Values.ingress.host }}
       http:
+    {{- else }}
+    - http:
+    {{- end }}
         paths:
           - path: /api
             pathType: Prefix

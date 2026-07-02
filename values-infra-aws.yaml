@@ -15,8 +15,13 @@ finflow-infra:
     className: "alb"
     controllerRoleArn: "arn:aws:iam::199667819856:role/aws-load-balancer-controller-role"
     hosts:
-      unleash: "k8s-finflowprodgroup-be3700653a-396980022.us-east-1.elb.amazonaws.com"
-      grafana: "k8s-finflowprodgroup-be3700653a-396980022.us-east-1.elb.amazonaws.com"
+      unleash: "unleash.k8s-finflowprodgroup-be3700653a-396980022.us-east-1.elb.amazonaws.com"
+      grafana: "grafana.k8s-finflowprodgroup-be3700653a-396980022.us-east-1.elb.amazonaws.com"
+    annotations:
+      alb.ingress.kubernetes.io/group.name: finflow-prod-group
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
     annotations:
       alb.ingress.kubernetes.io/group.name: finflow-prod-group
       alb.ingress.kubernetes.io/scheme: internet-facing

@@ -12,20 +12,20 @@ spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
   rules:
-    - host: {{ .Values.ingress.hosts.unleash | default "unleash.finflow.local" }}
+    - host: {{ .Values.ingress.hosts.unleash }}
       http:
         paths:
-          - path: /unleash
+          - path: /
             pathType: Prefix
             backend:
               service:
                 name: unleash-web
                 port:
                   number: 4242
-    - host: {{ .Values.ingress.hosts.grafana | default "grafana.finflow.local" }}
+    - host: {{ .Values.ingress.hosts.grafana }}
       http:
         paths:
-          - path: /grafana
+          - path: /
             pathType: Prefix
             backend:
               service:

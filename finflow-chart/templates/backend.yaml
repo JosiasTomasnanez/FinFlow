@@ -32,7 +32,6 @@ spec:
           ports:
             - containerPort: {{ .Values.backend.port }}
           env:
-            # Apuntando directo al nombre del script: {{ .Release.Name }}-app-secret
             - name: DATABASE_USER
               valueFrom:
                 secretKeyRef:
@@ -43,10 +42,17 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-app-secret
                   key: DB_PASSWORD
+            # 1. Inyectamos de forma segura el DB_NAME desde el secreto
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-app-secret
+                  key: DB_NAME
+            # 2. Modificamos la URL para que use el fragmento inyectado $(DATABASE_NAME) sin romper Helm
             - name: DATABASE_URL
-              value: "postgresql://$(DATABASE_USER):$(DATABASE_PASSWORD)@{{ .Values.backend.databaseHost }}:{{ .Values.backend.databasePort }}/{{ .Values.database.name }}?sslmode=disable"
+              value: "postgresql://$(DATABASE_USER):$(DATABASE_PASSWORD)@{{ .Values.backend.databaseHost }}:{{ .Values.backend.databasePort }}/$(DATABASE_NAME)?sslmode=disable"
             
-            - name: REDIS_URL
+              - name: REDIS_URL
               value: "{{ .Values.backend.redisUrl }}"
             - name: UNLEASH_URL
               value: "{{ .Values.backend.unleashUrl }}"

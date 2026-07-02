@@ -116,19 +116,12 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-unleash-secret
                   key: UNLEASH_ADMIN_TOKEN
-            # Inyectamos de forma segura los Tokens de Cliente concatenados nativamente desde K8s envs
-            - name: TOKEN_STAGING
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-unleash-secret
-                  key: TOKEN_STAGING
-            - name: TOKEN_PRODUCTION
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-unleash-secret
-                  key: TOKEN_PRODUCTION
+            # Inyectamos los tokens de los entornos concatenados en un solo string desde el Secreto Sellado
             - name: INIT_CLIENT_API_TOKENS
-              value: "$(TOKEN_STAGING),$(TOKEN_PRODUCTION)"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-unleash-secret
+                  key: INIT_CLIENT_API_TOKENS
             - name: INIT_FEATURES
               value: '[{"name":"login-feature-flag","description":"Controla el acceso al nuevo modulo de login","type":"release","enabled":true,"stale":false}]'
 ---

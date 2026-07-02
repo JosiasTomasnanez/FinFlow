@@ -16,7 +16,13 @@ backend:
   argoStrategy:
     steps:
       - setWeight: 33
-      - pause: {}
+        pause: {}
+  # Configuraciones más agresivas para producción
+  autoscaling:
+    minReplicas: 3
+    maxReplicas: 10
+    cooldownPeriod: 180
+    threshold: 25
 
 database:
   storageSize: 5Gi 
@@ -30,7 +36,7 @@ frontend:
   argoStrategy:
     steps:
       - setWeight: 33
-      - pause: {}
+        pause: {}
 
 ingress:
   enabled: true

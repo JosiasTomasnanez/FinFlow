@@ -13,7 +13,13 @@ backend:
   argoStrategy:
     steps:
       - setWeight: 33
-      - pause: {}
+        pause: {}
+  # Clavamos el autoscaling acá también para emparejar
+  autoscaling:
+    minReplicas: 1
+    maxReplicas: 3
+    cooldownPeriod: 300
+    threshold: 10
 
 database:
   storageSize: 1Gi 
@@ -27,7 +33,7 @@ frontend:
   argoStrategy:
     steps:
       - setWeight: 33
-      - pause: {} 
+        pause: {} 
 
 ingress:
   enabled: true

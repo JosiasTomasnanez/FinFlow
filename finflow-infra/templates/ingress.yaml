@@ -15,7 +15,7 @@ spec:
     - host: {{ .Values.ingress.hosts.unleash | default "unleash.finflow.local" }}
       http:
         paths:
-          - path: /
+          - path: /unleash
             pathType: Prefix
             backend:
               service:
@@ -25,7 +25,7 @@ spec:
     - host: {{ .Values.ingress.hosts.grafana | default "grafana.finflow.local" }}
       http:
         paths:
-          - path: /
+          - path: /grafana
             pathType: Prefix
             backend:
               service:

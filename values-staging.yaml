@@ -1,11 +1,10 @@
-environment: "staging" 
-
+environment: "staging"
 backend:
   replicas: 1
   port: 8080
   image:
     repository: josiastomasnanez/finflow-app
-    tag: v2
+    tag: ed01785e28c3c7426ea77dd37e873475fc6df80a
   databaseHost: "finflow-staging-postgres-service"
   databasePort: "5432"
   redisUrl: "redis://finflow-staging-redis-service:6339/0"
@@ -19,22 +18,19 @@ backend:
     maxReplicas: 3
     cooldownPeriod: 300
     threshold: 10
-
 database:
-  storageSize: 1Gi 
-
+  storageSize: 1Gi
 frontend:
   replicas: 1
   image:
     repository: josiastomasnanez/finflow-frontend
-    tag: v3
-  apiUrl: "http://staging.finflow.local/api" 
+    tag: ed01785e28c3c7426ea77dd37e873475fc6df80a
+  apiUrl: "http://staging.finflow.local/api"
   argoStrategy:
     steps:
       - setWeight: 33
-      - pause: {} 
-
+      - pause: {}
 ingress:
   enabled: true
-  className: "traefik" 
+  className: "traefik"
   host: "staging.finflow.local"

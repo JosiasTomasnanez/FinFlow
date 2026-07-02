@@ -8,6 +8,7 @@
 *.dylib
 *.test
 *.out
+secrets/*.env
 
 # Node
 node_modules/

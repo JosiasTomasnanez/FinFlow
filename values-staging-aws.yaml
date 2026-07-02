@@ -13,8 +13,7 @@ backend:
   argoStrategy:
     steps:
       - setWeight: 33
-        pause: {}
-  # 🔥 LA SOLUCIÓN AL INCENDIO:
+      - pause: {}
   autoscaling:
     minReplicas: 1
     maxReplicas: 3

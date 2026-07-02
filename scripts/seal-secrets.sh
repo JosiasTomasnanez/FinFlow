@@ -81,11 +81,12 @@ for key in "${!CONFIGS[@]}"; do
   echo "{{- if or (contains \"${key}\" .Release.Name) (eq .Values.environment \"${key}\") }}" > "$OUTPUT_FILE"
   
   # 3. Modificar dinámicamente los nombres fijos por tags de Helm e inyectar el contenido
-  # Esto cambia "finflow-prod-app-secret" por "{{ .Release.Name }}-app-secret" dinámicamente
   if [[ "$key" != "infra" ]]; then
+    # Esto cambia "finflow-prod-app-secret" por "{{ .Release.Name }}-app-secret" dinámicamente
     sed -e "s/name: ${SECRET_NAME}/name: {{ .Release.Name }}-app-secret/g" "$TEMP_FILE" >> "$OUTPUT_FILE"
   else
-    cat "$TEMP_FILE" >> "$OUTPUT_FILE"
+    # MODIFICACIÓN: Esto cambia "finflow-infra-unleash-secret" por "{{ .Release.Name }}-unleash-secret"
+    sed -e "s/name: ${SECRET_NAME}/name: {{ .Release.Name }}-unleash-secret/g" "$TEMP_FILE" >> "$OUTPUT_FILE"
   fi
   
   # 4. Inyectar el {{- end }} de Helm al final del archivo

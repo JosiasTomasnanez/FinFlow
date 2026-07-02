@@ -4,21 +4,22 @@ kind: Ingress
 metadata:
   name: {{ .Release.Name }}-app-ingress
   annotations:
-    # Mantenemos tus anotaciones dinámicas actuales
     {{- if .Values.ingress.annotations }}
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
     {{- end }}
-    # EXPLICACIÓN: Obligamos a que las reglas de este archivo se ordenen correctamente en AWS
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
 spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
   rules:
-    - host: {{ .Values.ingress.host | default "finflow.local" }}
+    # Si se define un host en el values, se aplica. Si viene vacío, se omite la línea 'host' 
+    # permitiendo que el AWS ALB acepte cualquier petición sin importar el dominio/DNS.
+    - {{ - if .Values.ingress.host }}
+      host: {{ .Values.ingress.host }}
+      {{- end }}
       http:
         paths:
-          # Primero evaluamos la API (Prioridad alta)
           - path: /api
             pathType: Prefix
             backend:
@@ -26,7 +27,6 @@ spec:
                 name: {{ .Release.Name }}-app-service
                 port:
                   number: 8080
-          # Al final el frontend como descarte
           - path: /
             pathType: Prefix
             backend:

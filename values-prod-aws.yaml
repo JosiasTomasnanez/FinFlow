@@ -17,7 +17,6 @@ backend:
     steps:
       - setWeight: 33
       - pause: {}
-
   autoscaling:
     minReplicas: 3
     maxReplicas: 10
@@ -25,14 +24,15 @@ backend:
     threshold: 25
 
 database:
-  storageSize: 5Gi 
+  storageSize: 5Gi  
 
 frontend:
   replicas: 3
   image:
     repository: josiastomasnanez/finflow-frontend
     tag: v3
-  apiUrl: "http://k8s-finflowprodgroup-be3700653a-396980022.us-east-1.elb.amazonaws.com/api"
+  # CAMBIO: Usamos ruta relativa para que el navegador resuelva el host dinámicamente
+  apiUrl: "/api"
   argoStrategy:
     steps:
       - setWeight: 33
@@ -41,7 +41,8 @@ frontend:
 ingress:
   enabled: true
   className: "alb"
-  host: "k8s-finflowprodgroup-be3700653a-396980022.us-east-1.elb.amazonaws.com"
+  # CAMBIO: Dejamos el host vacío para que el AWS ALB maneje todo el tráfico dirigido a él
+  host: ""
   annotations:
     alb.ingress.kubernetes.io/group.name: finflow-prod-group
     alb.ingress.kubernetes.io/scheme: internet-facing

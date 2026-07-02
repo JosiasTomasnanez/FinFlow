@@ -16,8 +16,7 @@ backend:
   argoStrategy:
     steps:
       - setWeight: 33
-        pause: {}
-  # Configuraciones más agresivas para producción
+      - pause: {}
   autoscaling:
     minReplicas: 3
     maxReplicas: 10
@@ -36,7 +35,7 @@ frontend:
   argoStrategy:
     steps:
       - setWeight: 33
-        pause: {}
+      - pause: {}
 
 ingress:
   enabled: true

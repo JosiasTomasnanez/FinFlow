@@ -16,8 +16,8 @@ backend:
   argoStrategy:
     steps:
       - setWeight: 33
-        pause: {}
-  # Dejamos la réplica base en 3 y escalado hasta 10 para bancar AWS con todo
+      - pause: {}
+
   autoscaling:
     minReplicas: 3
     maxReplicas: 10
@@ -36,7 +36,7 @@ frontend:
   argoStrategy:
     steps:
       - setWeight: 33
-        pause: {}
+      - pause: {}
 
 ingress:
   enabled: true

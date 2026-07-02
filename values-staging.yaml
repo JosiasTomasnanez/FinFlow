@@ -13,8 +13,7 @@ backend:
   argoStrategy:
     steps:
       - setWeight: 33
-        pause: {}
-  # Clavamos el autoscaling acá también para emparejar
+      - pause: {}
   autoscaling:
     minReplicas: 1
     maxReplicas: 3
@@ -33,7 +32,7 @@ frontend:
   argoStrategy:
     steps:
       - setWeight: 33
-        pause: {} 
+      - pause: {} 
 
 ingress:
   enabled: true

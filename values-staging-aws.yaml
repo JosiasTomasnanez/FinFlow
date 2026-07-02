@@ -33,7 +33,7 @@ frontend:
   argoStrategy:
     steps:
       - setWeight: 33
-        pause: {} 
+      - pause: {} 
 
 ingress:
   enabled: true

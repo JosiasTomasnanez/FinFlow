@@ -74,7 +74,8 @@ jobs:
 
       - name: Login Helm to ECR
         run: |
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | helm login --username AWS --password-stdin ${{ env.REGISTRY }}
+          # CORRECCIÓN AQUÍ: Se agregó 'registry' antes de 'login'
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | helm registry login --username AWS --password-stdin ${{ env.REGISTRY }}
 
       - name: Package and Push Helm Chart
         run: |
@@ -90,6 +91,7 @@ jobs:
           # 4. Lo subimos a tu repositorio privado finflow-chart de ECR
           helm push finflow-chart-1.0.${{ github.run_number }}.tgz oci://${{ env.REGISTRY }}
 
+      # ---- 3. ACTUALIZAR VALUES DE STAGING (GitOps) ----
       - name: Update Staging Tags with yq
         run: |
           wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq

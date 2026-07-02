@@ -4,7 +4,7 @@ backend:
   port: 8080
   image:
     repository: josiastomasnanez/finflow-app
-    tag: d4c89d14bafcc34db6547c634e432e9e3d01d940
+    tag: 786abb0fdfad660230ea8a6ba7c74786adf68d1d
   databaseHost: "finflow-staging-postgres-service"
   databasePort: "5432"
   redisUrl: "redis://finflow-staging-redis-service:6339/0"
@@ -24,7 +24,7 @@ frontend:
   replicas: 1
   image:
     repository: josiastomasnanez/finflow-frontend
-    tag: d4c89d14bafcc34db6547c634e432e9e3d01d940
+    tag: 786abb0fdfad660230ea8a6ba7c74786adf68d1d
   apiUrl: "http://staging.finflow.local/api"
   argoStrategy:
     steps:

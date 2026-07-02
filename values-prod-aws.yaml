@@ -7,8 +7,8 @@ backend:
   replicas: 3
   port: 8080
   image:
-    repository: josiastomasnanez/finflow-app
-    tag: v2
+    repository: 199667819856.dkr.ecr.us-east-1.amazonaws.com/finflow-backend
+    tag: latest
   databaseHost: "finflow-prod-postgres-service"
   databasePort: "5432"
   redisUrl: "redis://finflow-prod-redis-service:6339/0"
@@ -29,9 +29,8 @@ database:
 frontend:
   replicas: 3
   image:
-    repository: josiastomasnanez/finflow-frontend
-    tag: v3
-  # CAMBIO: Usamos ruta relativa para que el navegador resuelva el host dinámicamente
+    repository: 199667819856.dkr.ecr.us-east-1.amazonaws.com/finflow-frontend
+    tag: latest
   apiUrl: "/api"
   argoStrategy:
     steps:
@@ -41,7 +40,6 @@ frontend:
 ingress:
   enabled: true
   className: "alb"
-  # CAMBIO: Dejamos el host vacío para que el AWS ALB maneje todo el tráfico dirigido a él
   host: ""
   annotations:
     alb.ingress.kubernetes.io/group.name: finflow-prod-group

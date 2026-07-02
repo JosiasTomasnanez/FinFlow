@@ -4,8 +4,8 @@ backend:
   replicas: 1
   port: 8080
   image:
-    repository: josiastomasnanez/finflow-app
-    tag: v2
+    repository: 199667819856.dkr.ecr.us-east-1.amazonaws.com/finflow-backend
+    tag: latest
   databaseHost: "finflow-staging-postgres-service"
   databasePort: "5432"
   redisUrl: "redis://finflow-staging-redis-service:6339/0"
@@ -26,9 +26,8 @@ database:
 frontend:
   replicas: 1
   image:
-    repository: josiastomasnanez/finflow-frontend
-    tag: v3
-  # CAMBIO: Usamos ruta relativa. Vite ahora apuntará al mismo host que sirve el HTML
+    repository: 199667819856.dkr.ecr.us-east-1.amazonaws.com/finflow-frontend
+    tag: latest
   apiUrl: "/api"
   argoStrategy:
     steps:
@@ -38,7 +37,6 @@ frontend:
 ingress:
   enabled: true
   className: "alb"
-  # CAMBIO: Quitamos el host harcodeado para evitar conflictos de ruteo con el balanceador
   host: ""
   annotations:
     alb.ingress.kubernetes.io/group.name: finflow-staging-group

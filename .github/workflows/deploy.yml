@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*' 
 
 permissions:
   id-token: write
@@ -74,34 +76,45 @@ jobs:
 
       - name: Login Helm to ECR
         run: |
-          # CORRECCIÓN AQUÍ: Se agregó 'registry' antes de 'login'
           aws ecr get-login-password --region ${{ env.AWS_REGION }} | helm registry login --username AWS --password-stdin ${{ env.REGISTRY }}
 
       - name: Package and Push Helm Chart
         run: |
-          # 1. Empaquetamos el subchart infra y lo metemos dentro del chart principal (como hacías local)
           helm package finflow-infra --destination finflow-chart/charts/
-          
-          # 2. Actualizamos las dependencias del chart principal para asegurar que todo cuadre
           helm dependency list finflow-chart
-          
-          # 3. Empaquetamos el chart principal (que ya lleva dentro a finflow-infra)
           helm package finflow-chart --version 1.0.${{ github.run_number }}
-          
-          # 4. Lo subimos a tu repositorio privado finflow-chart de ECR
           helm push finflow-chart-1.0.${{ github.run_number }}.tgz oci://${{ env.REGISTRY }}
 
       # ---- 3. ACTUALIZAR VALUES DE STAGING (GitOps) ----
       - name: Update Staging Tags with yq
+        if: github.ref == 'refs/heads/main' 
         run: |
           wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq
           yq -i '.backend.image.tag = "${{ env.IMAGE_TAG }}"' values-staging.yaml
           yq -i '.frontend.image.tag = "${{ env.IMAGE_TAG }}"' values-staging.yaml
 
-      - name: Commit and Push Changes to Main
+      - name: Commit and Push Staging Changes
+        if: github.ref == 'refs/heads/main'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add values-staging.yaml
           git commit -m "chore(gitops): update staging image tags to ${{ env.IMAGE_TAG }} [skip ci]" || echo "No changes to commit"
+          git push origin main
+
+      # ---- 4. ACTUALIZAR VALUES DE PROD (GitOps) ----
+      - name: Update Prod Tags with yq
+        if: startsWith(github.ref, 'refs/tags/v') # Solo corre si creaste un tag (ej: v1.0.0)
+        run: |
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+          yq -i '.backend.image.tag = "${{ env.IMAGE_TAG }}"' values-prod.yaml
+          yq -i '.frontend.image.tag = "${{ env.IMAGE_TAG }}"' values-prod.yaml
+
+      - name: Commit and Push Prod Changes
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add values-prod.yaml
+          git commit -m "chore(gitops): update prod image tags to ${{ env.IMAGE_TAG }} [skip ci]" || echo "No changes to commit"
           git push origin main

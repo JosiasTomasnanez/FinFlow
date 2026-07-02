@@ -32,8 +32,20 @@ spec:
           ports:
             - containerPort: {{ .Values.backend.port }}
           env:
+            # Apuntando directo al nombre del script: {{ .Release.Name }}-app-secret
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-app-secret
+                  key: DB_USER
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-app-secret
+                  key: DB_PASSWORD
             - name: DATABASE_URL
-              value: "{{ .Values.backend.databaseUrl }}" 
+              value: "postgresql://$(DATABASE_USER):$(DATABASE_PASSWORD)@{{ .Values.backend.databaseHost }}:{{ .Values.backend.databasePort }}/{{ .Values.database.name }}?sslmode=disable"
+            
             - name: REDIS_URL
               value: "{{ .Values.backend.redisUrl }}"
             - name: UNLEASH_URL
@@ -46,16 +58,8 @@ spec:
             - name: UNLEASH_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-backend-secret
+                  name: {{ .Release.Name }}-app-secret
                   key: UNLEASH_TOKEN
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ .Release.Name }}-backend-secret
-type: Opaque
-stringData: 
-  UNLEASH_TOKEN: "{{ .Values.backend.unleashToken }}" 
 ---
 apiVersion: v1
 kind: Service

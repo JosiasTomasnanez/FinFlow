@@ -23,3 +23,10 @@ rbac:
 
 metricsServer:
   openshift: false
+
+backend:
+  autoscaling:
+    minReplicas: 2     
+    maxReplicas: 7
+    cooldownPeriod: 300
+    threshold: 20

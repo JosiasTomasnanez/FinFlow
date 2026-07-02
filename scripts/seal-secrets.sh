@@ -4,15 +4,8 @@ set -euo pipefail
 # ==============================================================================
 # seal-secrets.sh
 # Genera SealedSecrets para todos los ambientes de FinFlow a partir de
-# archivos .env locales (NUNCA commiteados). El output SÍ se commitea.
-#
-# Requisitos:
-#   - kubectl con contexto apuntando al cluster correcto
-#   - kubeseal instalado
-#   - El controller de sealed-secrets corriendo en kube-system
-#
-# Uso:
-#   ./scripts/seal-secrets.sh
+# archivos .env locales (NUNCA commiteados). El output SÍ se commitea con
+# condicionales nativos de Helm inyectados dinámicamente.
 # ==============================================================================
 
 CONTROLLER_NAME="sealed-secrets"
@@ -20,7 +13,7 @@ CONTROLLER_NAMESPACE="kube-system"
 OUTPUT_DIR="finflow-chart/templates/secrets"
 SECRETS_DIR="secrets"
 
-# Formato: [clave del .env] = "namespace nombre-del-secret"
+# Mantenemos tus nombres originales consistentes con el backend (-app-secret)
 declare -A CONFIGS=(
   ["prod"]="finflow-prod finflow-prod-app-secret"
   ["staging"]="finflow-staging finflow-staging-app-secret"
@@ -44,7 +37,7 @@ fi
 
 echo ""
 echo "=================================================="
-echo "  Generando SealedSecrets"
+echo "  Generando SealedSecrets con bloques Helm {{ if }}"
 echo "=================================================="
 
 for key in "${!CONFIGS[@]}"; do
@@ -72,7 +65,9 @@ for key in "${!CONFIGS[@]}"; do
   fi
 
   OUTPUT_FILE="${OUTPUT_DIR}/${key}-sealed-secret.yaml"
+  TEMP_FILE="${OUTPUT_FILE}.tmp"
 
+  # 1. Generar el SealedSecret plano temporal mediante kubeseal
   kubectl create secret generic "$SECRET_NAME" \
     --namespace "$NAMESPACE" \
     "${LITERAL_ARGS[@]}" \
@@ -80,17 +75,33 @@ for key in "${!CONFIGS[@]}"; do
   kubeseal --format=yaml \
     --controller-name="$CONTROLLER_NAME" \
     --controller-namespace="$CONTROLLER_NAMESPACE" \
-    > "$OUTPUT_FILE"
+    > "$TEMP_FILE"
 
-  echo "✅ Generado: $OUTPUT_FILE"
+  # 2. Inyectar de forma dinámica el condicional {{- if }} de Helm al inicio del archivo
+  echo "{{- if or (contains \"${key}\" .Release.Name) (eq .Values.environment \"${key}\") }}" > "$OUTPUT_FILE"
+  
+  # 3. Modificar dinámicamente los nombres fijos por tags de Helm e inyectar el contenido
+  # Esto cambia "finflow-prod-app-secret" por "{{ .Release.Name }}-app-secret" dinámicamente
+  if [[ "$key" != "infra" ]]; then
+    sed -e "s/name: ${SECRET_NAME}/name: {{ .Release.Name }}-app-secret/g" "$TEMP_FILE" >> "$OUTPUT_FILE"
+  else
+    cat "$TEMP_FILE" >> "$OUTPUT_FILE"
+  fi
+  
+  # 4. Inyectar el {{- end }} de Helm al final del archivo
+  echo "{{- end }}" >> "$OUTPUT_FILE"
+
+  # Limpiar el archivo temporal
+  rm "$TEMP_FILE"
+
+  echo "✅ Generado e inyectado con éxito: $OUTPUT_FILE"
 done
 
 echo ""
 echo "=================================================="
 echo "  Listo. Próximos pasos:"
-echo "  1. Revisá los archivos en $OUTPUT_DIR"
+echo "  1. Revisá los archivos generados en $OUTPUT_DIR"
 echo "  2. git add $OUTPUT_DIR"
 echo "  3. Commit + push"
-echo "  4. Sync en el dashboard de Argo CD"
-echo "  5. Verificá: kubectl get secrets -n finflow-prod"
+echo "  4. ¡Dale Sync en Argo CD!"
 echo "=================================================="

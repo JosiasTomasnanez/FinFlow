@@ -1,15 +1,5 @@
 {{- if .Values.database }}
 apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ .Release.Name }}-postgres-secret
-type: Opaque
-stringData:
-  postgres-user: "{{ .Values.database.user }}"
-  postgres-password: "{{ .Values.database.password }}"
-  postgres-db: "{{ .Values.database.name }}"
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-postgres-pvc
@@ -55,18 +45,18 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-postgres-secret
-                  key: postgres-user
+                  name: {{ .Release.Name }}-app-secret
+                  key: DB_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-postgres-secret
-                  key: postgres-password
+                  name: {{ .Release.Name }}-app-secret
+                  key: DB_PASSWORD
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-postgres-secret
-                  key: postgres-db
+                  name: {{ .Release.Name }}-app-secret
+                  key: DB_NAME
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data

@@ -3,21 +3,20 @@ apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: {{ .Release.Name }}-backend-autoscaler
-  namespace: {{ .Release.Namespace }} 
 spec:
   scaleTargetRef:
     apiVersion: argoproj.io/v1alpha1
     kind: Rollout
     name: {{ .Release.Name }}-app
     envSourceContainerName: finflow-app
-  minReplicaCount: 1
-  maxReplicaCount: 5
-  cooldownPeriod: 300
+  minReplicaCount: {{ .Values.backend.autoscaling.minReplicas | default 1 }}
+  maxReplicaCount: {{ .Values.backend.autoscaling.maxReplicas | default 5 }}
+  cooldownPeriod: {{ .Values.backend.autoscaling.cooldownPeriod | default 300 }}
   triggers:
   - type: prometheus
     metadata:
       serverAddress: http://finflow-infra-prometheus-service.finflow-infra.svc.cluster.local:9090
       metricName: http_requests_total
       query: sum(rate(http_requests_total{app="{{ .Release.Name }}-app"}[2m]))
-      threshold: '15'
+      threshold: '{{ .Values.backend.autoscaling.threshold | default 15 }}'
 {{- end }}

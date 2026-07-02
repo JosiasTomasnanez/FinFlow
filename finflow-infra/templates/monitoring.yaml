@@ -3,7 +3,6 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ .Release.Name }}-prometheus-sa
-  namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -31,7 +30,6 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-prometheus-config
-  namespace: {{ .Release.Namespace }}
 data:
   prometheus.yml: |
     global:
@@ -65,11 +63,11 @@ data:
           - role: endpoints
             namespaces:
               names:
-                - {{ .Release.Namespace }} # finflow-infra
+                - {{ .Release.Namespace }}
         relabel_configs:
           - source_labels: [__meta_kubernetes_service_name]
             action: keep
-            regex: keda-operator  # El servicio base generado por el chart de KEDA
+            regex: keda-operator
           - source_labels: [__meta_kubernetes_pod_container_port_number]
             action: keep
             regex: "8080"
@@ -83,7 +81,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-prometheus
-  namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
@@ -112,7 +109,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}-prometheus-service
-  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     app: {{ .Release.Name }}-prometheus
@@ -125,7 +121,6 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-grafana-pvc
-  namespace: {{ .Release.Namespace }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -137,7 +132,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-grafana
-  namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
@@ -167,7 +161,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}-grafana-service
-  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     app: {{ .Release.Name }}-grafana

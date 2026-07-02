@@ -2,19 +2,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: finflow-infra-ingress
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Release.Name }}-infra-ingress
   annotations:
     {{- if .Values.ingress.annotations }}
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
     {{- end }}
 spec:
-  # Si se define en los values se usa, si no, se omite para que el clúster use su default
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
   rules:
-    - host: {{ index .Values "ingress" "hosts" "unleash" | default "unleash.finflow.local" }}
+    - host: {{ .Values.ingress.hosts.unleash | default "unleash.finflow.local" }}
       http:
         paths:
           - path: /
@@ -24,7 +22,7 @@ spec:
                 name: unleash-web
                 port:
                   number: 4242
-    - host: {{ index .Values "ingress" "hosts" "grafana" | default "grafana.finflow.local" }}
+    - host: {{ .Values.ingress.hosts.grafana | default "grafana.finflow.local" }}
       http:
         paths:
           - path: /

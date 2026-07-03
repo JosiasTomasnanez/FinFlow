@@ -6,11 +6,9 @@ metadata:
 spec:
   project: default
   sources:
-    # 1. Apuntamos a la carpeta vacía/limpia 'argocd-infrastructure/argocd-config'
-    # Así ArgoCD no se choca con ningún JSON de la raíz.
+    # 1. Apuntamos a una subcarpeta limpia de infraestructura. Chau escaneo del JSON de AWS.
     - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
       targetRevision: main
-      path: argocd-infrastructure/argocd-config
       ref: root
     # 2. El Source del Chart de Infraestructura
     - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
@@ -18,8 +16,7 @@ spec:
       path: finflow-infra
       helm:
         valueFiles:
-          # Subimos un nivel relativo desde 'argocd-config' para alcanzar la raíz original
-          - $root/../values-infra.yaml
+          - $root/values-infra.yaml
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: finflow-infra

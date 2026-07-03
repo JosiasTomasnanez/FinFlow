@@ -12,6 +12,7 @@ CONTROLLER_NAME="sealed-secrets"
 CONTROLLER_NAMESPACE="kube-system"
 OUTPUT_DIR="finflow-chart/templates/secrets"
 SECRETS_DIR="secrets"
+CERT_FILE="pub-cert.tmp.pem" # Archivo temporal para el certificado del clúster
 
 # Mantenemos tus nombres originales consistentes con el backend (-app-secret)
 declare -A CONFIGS=(
@@ -34,6 +35,17 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
   echo "Abortado. Cambiá de contexto con: kubectl config use-context <nombre>"
   exit 1
 fi
+
+echo ""
+echo "=================================================="
+echo "  Descargando certificado público del controlador..."
+echo "=================================================="
+# Descargamos el certificado directamente usando la API de kubeseal, evitando fallas por labels
+if ! kubeseal --controller-name="$CONTROLLER_NAME" --controller-namespace="$CONTROLLER_NAMESPACE" --fetch-cert > "$CERT_FILE"; then
+  echo "❌ Error al descargar el certificado de Sealed Secrets. Verificá que el deployment esté corriendo."
+  exit 1
+fi
+echo "✅ Certificado obtenido con éxito."
 
 echo ""
 echo "=================================================="
@@ -67,15 +79,12 @@ for key in "${!CONFIGS[@]}"; do
   OUTPUT_FILE="${OUTPUT_DIR}/${key}-sealed-secret.yaml"
   TEMP_FILE="${OUTPUT_FILE}.tmp"
 
-  # 1. Generar el SealedSecret plano temporal mediante kubeseal
+  # 1. Generar el SealedSecret plano temporal usando el certificado descargado explicitamente (--cert)
   kubectl create secret generic "$SECRET_NAME" \
     --namespace "$NAMESPACE" \
     "${LITERAL_ARGS[@]}" \
     --dry-run=client -o yaml | \
-  kubeseal --format=yaml \
-    --controller-name="$CONTROLLER_NAME" \
-    --controller-namespace="$CONTROLLER_NAMESPACE" \
-    > "$TEMP_FILE"
+  kubeseal --format=yaml --cert="$CERT_FILE" > "$TEMP_FILE"
 
   # 2. Inyectar de forma dinámica el condicional {{- if }} de Helm al inicio del archivo
   echo "{{- if or (contains \"${key}\" .Release.Name) (eq .Values.environment \"${key}\") }}" > "$OUTPUT_FILE"
@@ -97,6 +106,9 @@ for key in "${!CONFIGS[@]}"; do
 
   echo "✅ Generado e inyectado con éxito: $OUTPUT_FILE"
 done
+
+# Limpiar el certificado temporal del clúster
+rm -f "$CERT_FILE"
 
 echo ""
 echo "=================================================="

@@ -11,6 +11,7 @@
 #secrets & AWS config
 secrets/*.env
 iam_policy.json
+master-sealed-secret-key.yaml
 .env
 
 # Node

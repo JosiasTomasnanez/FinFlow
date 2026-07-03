@@ -23,8 +23,18 @@ backend:
     cooldownPeriod: 180
     threshold: 25
 
+# --- SECCIÓN ADAPTADA PARA LA NUEVA LÓGICA DE BASE DE DATOS EN AWS ---
 database:
+  enabled: true
   storageSize: 5Gi  
+  storageClass: "ebs-sc"        
+  nodeSelector:                 
+    tipo: "BD"
+  tolerations:                 
+    - key: "tipo"
+      operator: "Equal"
+      value: "BD"
+      effect: "NoSchedule"
 
 frontend:
   replicas: 3

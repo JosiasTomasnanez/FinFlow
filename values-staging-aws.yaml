@@ -20,8 +20,18 @@ backend:
     cooldownPeriod: 300
     threshold: 10
 
+# --- SECCIÓN ADAPTADA PARA LA NUEVA LÓGICA DE BASE DE DATOS EN AWS (STAGING) ---
 database:
-  storageSize: 1Gi 
+  enabled: true
+  storageSize: 1Gi  
+  storageClass: "ebs-sc"        # <-- Conserva el aprovisionamiento de AWS
+  nodeSelector:                 # <-- Mantiene las restricciones de nodos en la nube
+    tipo: "BD"
+  tolerations:                  # <-- Permite al pod meterse en tus nodos con Taints
+    - key: "tipo"
+      operator: "Equal"
+      value: "BD"
+      effect: "NoSchedule"
 
 frontend:
   replicas: 1

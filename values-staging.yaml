@@ -1,4 +1,5 @@
 environment: "staging"
+
 backend:
   replicas: 1
   port: 8080
@@ -18,8 +19,12 @@ backend:
     maxReplicas: 3
     cooldownPeriod: 300
     threshold: 10
+
+# --- SECCIÓN CORREGIDA PARA ENTORNO LOCAL (STAGING) ---
 database:
-  storageSize: 1Gi
+  enabled: true       # Activamos la base de datos PostgreSQL de Staging
+  storageSize: 1Gi    # Mantenemos tu tamaño asignado de 1Gi para pruebas
+
 frontend:
   replicas: 1
   image:
@@ -30,6 +35,7 @@ frontend:
     steps:
       - setWeight: 33
       - pause: {}
+
 ingress:
   enabled: true
   className: "traefik"

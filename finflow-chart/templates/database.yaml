@@ -1,4 +1,4 @@
-{{- if .Values.database }}
+{{- if and .Values.database .Values.database.enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -6,8 +6,11 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ebs-sc 
+  {{- if .Values.database.storageClass }}
+  storageClassName: {{ .Values.database.storageClass }}
+  {{- end }}
   resources:
+    rules:
     requests:
       storage: {{ .Values.database.storageSize }} 
 ---
@@ -27,13 +30,16 @@ spec:
       labels:
         app: {{ .Release.Name }}-postgres-db
     spec: 
+      # 2. Solo aplica el nodeSelector si está habilitado en los values
+      {{- if .Values.database.nodeSelector }}
       nodeSelector: 
-        tipo: BD 
-      tolerations: 
-        - key: "tipo"
-          operator: "Equal"
-          value: "BD"
-          effect: "NoSchedule" 
+        {{- toYaml .Values.database.nodeSelector | nindent 8 }}
+      {{- end }}
+      # 3. Solo aplica tolerations si están habilitadas en los values
+      {{- if .Values.database.tolerations }}
+      tolerations:
+        {{- toYaml .Values.database.tolerations | nindent 8 }}
+      {{- end }}
       containers:
         - name: postgres 
           image: postgres:15-alpine 

@@ -5,16 +5,19 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  sources:                            
+  sources:
+    # 1. Source raíz para mapear los values globales (¡Acá va el punto!)
     - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
       targetRevision: main
-      ref: root                      
+      path: .             # 👈 Asegurate de que tenga el punto acá
+      ref: root
+    # 2. Source del Chart real de Infraestructura
     - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
       targetRevision: main
-      path: finflow-infra 
+      path: finflow-infra # Carpeta del Chart
       helm:
         valueFiles:
-          - $root/values-infra.yaml 
+          - $root/values-infra.yaml
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: finflow-infra

@@ -6,15 +6,17 @@ metadata:
 spec:
   project: default
   sources:
-    # 1. Source raíz para mapear los values globales (¡Acá va el punto!)
+    # 1. Mapeamos la raíz pero le indicamos a ArgoCD que SOLO procese este archivo
     - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
       targetRevision: main
-      path: .             # 👈 Asegurate de que tenga el punto acá
+      path: .
       ref: root
-    # 2. Source del Chart real de Infraestructura
+      directory:
+        include: 'values-infra.yaml' # 👈 Crucial: Así ignora por completo el iam_policy.json
+    # 2. El Chart de Infraestructura que consume el value mapeado arriba
     - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
       targetRevision: main
-      path: finflow-infra # Carpeta del Chart
+      path: finflow-infra
       helm:
         valueFiles:
           - $root/values-infra.yaml

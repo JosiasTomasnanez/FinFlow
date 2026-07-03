@@ -5,16 +5,24 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
-    targetRevision: main
-    path: finflow-chart
-    helm:
-      valueFiles:
-        - ../values-prod.yaml
+  sources:
+    # Source 1: Le da un alias ($root) a la raíz de tu repositorio
+    - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
+      targetRevision: main
+      ref: root
+    # Source 2: Se para en el chart y lee el archivo usando el alias
+    - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
+      targetRevision: main
+      path: finflow-chart
+      helm:
+        valueFiles:
+          - $root/values-prod.yaml # 👈 Así lee el de la raíz sin romper las reglas de Helm
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: finflow-prod
   syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true

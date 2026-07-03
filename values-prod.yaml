@@ -23,7 +23,6 @@ backend:
     cooldownPeriod: 180
     threshold: 25
 
-# --- SECCIÓN CORREGIDA PARA ENTORNO LOCAL ---
 database:
   enabled: true       
   storageSize: 5Gi    

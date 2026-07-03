@@ -5,13 +5,16 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
-    targetRevision: main
-    path: finflow-chart
-    helm:
-      valueFiles:
-        - ../values-staging.yaml
+  sources:
+    - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
+      targetRevision: main
+      ref: root
+    - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
+      targetRevision: main
+      path: finflow-chart
+      helm:
+        valueFiles:
+          - $root/values-staging.yaml 
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: finflow-staging

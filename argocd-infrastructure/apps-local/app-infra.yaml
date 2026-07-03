@@ -6,20 +6,20 @@ metadata:
 spec:
   project: default
   sources:
-    # 1. Mapeamos la raíz pero le indicamos a ArgoCD que SOLO procese este archivo
+    # 1. Apuntamos a la carpeta vacía/limpia 'argocd-infrastructure/argocd-config'
+    # Así ArgoCD no se choca con ningún JSON de la raíz.
     - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
       targetRevision: main
-      path: .
+      path: argocd-infrastructure/argocd-config
       ref: root
-      directory:
-        include: 'values-infra.yaml' # 👈 Crucial: Así ignora por completo el iam_policy.json
-    # 2. El Chart de Infraestructura que consume el value mapeado arriba
+    # 2. El Source del Chart de Infraestructura
     - repoURL: 'https://github.com/josiastomasnanez/FinFlow.git'
       targetRevision: main
       path: finflow-infra
       helm:
         valueFiles:
-          - $root/values-infra.yaml
+          # Subimos un nivel relativo desde 'argocd-config' para alcanzar la raíz original
+          - $root/../values-infra.yaml
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: finflow-infra

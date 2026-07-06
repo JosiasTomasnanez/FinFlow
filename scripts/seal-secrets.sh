@@ -6,22 +6,22 @@ set -euo pipefail
 # Genera SealedSecrets para todos los ambientes de FinFlow a partir de
 # archivos .env locales (NUNCA commiteados). El output SÍ se commitea con
 # condicionales nativos de Helm inyectados dinámicamente.
+#
+# Cada entorno define su propia carpeta de destino, porque "infra" vive en
+# un chart separado (finflow-infra) del resto (finflow-chart).
 # ==============================================================================
 
 CONTROLLER_NAME="sealed-secrets"
 CONTROLLER_NAMESPACE="kube-system"
-OUTPUT_DIR="finflow-chart/templates/secrets"
 SECRETS_DIR="secrets"
 CERT_FILE="pub-cert.tmp.pem" # Archivo temporal para el certificado del clúster
 
-# Mantenemos tus nombres originales consistentes con el backend (-app-secret)
+# Formato: [namespace] [nombre-secret] [carpeta-de-output]
 declare -A CONFIGS=(
-  ["prod"]="finflow-prod finflow-prod-app-secret"
-  ["staging"]="finflow-staging finflow-staging-app-secret"
-  ["infra"]="finflow-infra finflow-infra-unleash-secret"
+  ["prod"]="finflow-prod finflow-prod-app-secret finflow-chart/templates/secrets"
+  ["staging"]="finflow-staging finflow-staging-app-secret finflow-chart/templates/secrets"
+  ["infra"]="finflow-infra finflow-infra-unleash-secret finflow-infra/templates/secrets"
 )
-
-mkdir -p "$OUTPUT_DIR"
 
 echo "=================================================="
 echo "  Verificando conexión al cluster..."
@@ -53,7 +53,8 @@ echo "  Generando SealedSecrets con bloques Helm {{ if }}"
 echo "=================================================="
 
 for key in "${!CONFIGS[@]}"; do
-  read -r NAMESPACE SECRET_NAME <<< "${CONFIGS[$key]}"
+  read -r NAMESPACE SECRET_NAME TARGET_DIR <<< "${CONFIGS[$key]}"
+  mkdir -p "$TARGET_DIR"
   ENV_FILE="${SECRETS_DIR}/${key}.env"
 
   if [[ ! -f "$ENV_FILE" ]]; then
@@ -62,7 +63,7 @@ for key in "${!CONFIGS[@]}"; do
   fi
 
   echo ""
-  echo "🔐 Sellando '$key' -> namespace=$NAMESPACE secret=$SECRET_NAME"
+  echo "🔐 Sellando '$key' -> namespace=$NAMESPACE secret=$SECRET_NAME -> $TARGET_DIR"
 
   # Armar los --from-literal a partir del .env, ignorando comentarios y líneas vacías
   LITERAL_ARGS=()
@@ -76,7 +77,7 @@ for key in "${!CONFIGS[@]}"; do
     continue
   fi
 
-  OUTPUT_FILE="${OUTPUT_DIR}/${key}-sealed-secret.yaml"
+  OUTPUT_FILE="${TARGET_DIR}/${key}-sealed-secret.yaml"
   TEMP_FILE="${OUTPUT_FILE}.tmp"
 
   # 1. Generar el SealedSecret plano temporal usando el certificado descargado explicitamente (--cert)
@@ -88,7 +89,7 @@ for key in "${!CONFIGS[@]}"; do
 
   # 2. Inyectar de forma dinámica el condicional {{- if }} de Helm al inicio del archivo
   echo "{{- if or (contains \"${key}\" .Release.Name) (eq .Values.environment \"${key}\") }}" > "$OUTPUT_FILE"
-  
+
   # 3. Modificar dinámicamente los nombres fijos por tags de Helm e inyectar el contenido
   if [[ "$key" != "infra" ]]; then
     # Esto cambia "finflow-prod-app-secret" por "{{ .Release.Name }}-app-secret" dinámicamente
@@ -97,7 +98,7 @@ for key in "${!CONFIGS[@]}"; do
     # MODIFICACIÓN: Esto cambia "finflow-infra-unleash-secret" por "{{ .Release.Name }}-unleash-secret"
     sed -e "s/name: ${SECRET_NAME}/name: {{ .Release.Name }}-unleash-secret/g" "$TEMP_FILE" >> "$OUTPUT_FILE"
   fi
-  
+
   # 4. Inyectar el {{- end }} de Helm al final del archivo
   echo "{{- end }}" >> "$OUTPUT_FILE"
 
@@ -113,8 +114,8 @@ rm -f "$CERT_FILE"
 echo ""
 echo "=================================================="
 echo "  Listo. Próximos pasos:"
-echo "  1. Revisá los archivos generados en $OUTPUT_DIR"
-echo "  2. git add $OUTPUT_DIR"
+echo "  1. Revisá los archivos generados en finflow-chart/templates/secrets/ y finflow-infra/templates/secrets/"
+echo "  2. git add ."
 echo "  3. Commit + push"
 echo "  4. ¡Dale Sync en Argo CD!"
 echo "=================================================="

@@ -17,6 +17,6 @@ spec:
     metadata:
       serverAddress: http://finflow-infra-prometheus-service.finflow-infra.svc.cluster.local:9090
       metricName: gin_requests_total
-      query: sum(rate(gin_requests_total{app="{{ .Release.Name }}-app"}[2m]))
+      query: sum(rate(gin_requests_total{pod=~"{{ .Release.Name }}-app-.*"}[2m]))
       threshold: '{{ .Values.backend.autoscaling.threshold | default 15 }}'
 {{- end }}

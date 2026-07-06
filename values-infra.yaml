@@ -1,17 +1,17 @@
-finflow-infra:
+enabled: true
+
+unleash:
+  db:
+    storageSize: 3Gi
+
+prometheus:
+  monitoredNamespaces:
+    - finflow-staging
+    - finflow-prod
+
+ingress:
   enabled: true
-
-  unleash:
-    db:
-      storageSize: 3Gi
-  prometheus:
-    monitoredNamespaces:
-      - finflow-staging
-      - finflow-prod
-
-  ingress:
-    enabled: true
-    className: "traefik"
-    hosts:
-      unleash: "unleash.finflow.local"
-      grafana: "grafana.finflow.local"
+  className: "traefik"
+  hosts:
+    unleash: "unleash.finflow.local"
+    grafana: "grafana.finflow.local"

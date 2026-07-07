@@ -172,7 +172,7 @@ jobs:
 
       - name: Login Helm to Harbor
         run: |
-          echo "${{ secrets.HARBOR_PASSWORD }}" | helm registry login ${{ env.HARBOR_REGISTRY }} --username "${{ secrets.HARBOR_USERNAME }}" --password-stdin
+          echo "${{ secrets.HARBOR_PASSWORD }}" | helm registry login ${{ env.HARBOR_REGISTRY }} --username 'robot$github-actions' --password-stdin
 
       - name: Package and Push Helm Chart to Harbor
         run: |

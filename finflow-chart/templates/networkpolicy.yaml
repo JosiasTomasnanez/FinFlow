@@ -1,0 +1,170 @@
+{{- if .Values.networkPolicy.enabled }}
+# ==============================================================================
+# 1. DEFAULT DENY - Bloquea todo el tráfico de entrada y salida por default.
+#    A partir de acá, solo pasa lo que se permite explícitamente más abajo.
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# ==============================================================================
+# 2. DNS - Sin esto, ningún pod puede resolver nombres de Service (postgres,
+#    redis, unleash-web, etc). Es la regla que todos olvidan y todo se rompe.
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# ==============================================================================
+# 3. FRONTEND - Recibe tráfico de cualquier lado (es la puerta pública, el
+#    Ingress Controller se encarga de filtrar antes de llegar acá).
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Release.Name }}-frontend
+  policyTypes:
+    - Ingress
+  ingress:
+    - {}
+
+---
+# ==============================================================================
+# 4. BACKEND - Solo recibe del frontend (mismo namespace) y de Prometheus
+#    (namespace finflow-infra, para scrapear /metrics).
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Release.Name }}-app
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: {{ .Release.Name }}-frontend
+      ports:
+        - protocol: TCP
+          port: 8080
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: finflow-infra
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# ==============================================================================
+# 5. BACKEND EGRESS - Solo puede hablar con su propia DB, Redis, y Unleash
+#    (en finflow-infra). Nada más, ni siquiera internet.
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Release.Name }}-app
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: {{ .Release.Name }}-postgres-db
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - podSelector:
+            matchLabels:
+              app: {{ .Release.Name }}-redis
+      ports:
+        - protocol: TCP
+          port: 6339
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: finflow-infra
+      ports:
+        - protocol: TCP
+          port: 4242
+
+---
+# ==============================================================================
+# 6. DATABASE - Solo el backend le puede hablar. Nadie más, ni el frontend.
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-database-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Release.Name }}-postgres-db
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: {{ .Release.Name }}-app
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# ==============================================================================
+# 7. REDIS - Igual que la DB, solo el backend.
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-redis-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Release.Name }}-redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: {{ .Release.Name }}-app
+      ports:
+        - protocol: TCP
+          port: 6339
+{{- end }}

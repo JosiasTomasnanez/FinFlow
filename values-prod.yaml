@@ -1,6 +1,9 @@
 argo-rollouts:
   installCRDs: false
 
+networkPolicy:
+  enabled: true
+
 environment: "prod" 
 
 backend:

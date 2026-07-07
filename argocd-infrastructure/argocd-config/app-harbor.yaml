@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: 'https://helm.goharbor.io'
-    targetRevision: 1.15.2 
+    targetRevision: 1.19.1
     chart: harbor
     helm:
       values: |
@@ -15,8 +15,8 @@ spec:
           type: ingress
           ingress:
             hosts:
-              core: harbor.tudominio.local
-        externalURL: https://harbor.tudominio.local
+              core: harbor.finflow.local
+        externalURL: http://harbor.finflow.local
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: harbor
@@ -24,4 +24,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    createNamespace: true
+    syncOptions:
+      - CreateNamespace=true

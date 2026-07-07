@@ -46,7 +46,7 @@ Los diferentes servicios implementados son:
 
 - **Frontend:** Implementado con React, constituye la interfaz web utilizada por los usuarios para interactuar con la plataforma. Su principal responsabilidad es presentar la información y consumir la API REST expuesta por el backend mediante solicitudes HTTP.
 
-- **PostgreSQL:** Cada entorno dispone de una instancia aislada de PostgreSQL, garantizando la separación de los datos entre Desarrollo, Staging y Producción. La base de datos cuenta con almacenamiento persistente a través de PVC, evitando la pérdida de información ante el reinicio o la recreación de los pods.
+- **PostgreSQL:** Cada entorno dispone de una instancia aislada de PostgreSQL, garantizando la separación de los datos entre Desarrollo, Staging y Producción. La base de datos cuenta con almacenamiento persistente a través de PVC, evitando la pérdida de información ante el reinicio o la recreación de los pods. 
 
 - **Redis:** Se utiliza Redis como sistema de caché entre el backend y PostgreSQL para reducir los tiempos de acceso a la información más consultada. Ante una solicitud, el backend verifica primero la existencia del dato en la caché, si no se encuentra (cache miss), realiza la consulta sobre PostgreSQL y almacena el resultado en Redis para futuras peticiones.
 
@@ -111,3 +111,43 @@ El proceso consiste en:
 El script contempla la generación de secretos independientes para los entornos de Staging, Producción e Infraestructura, permitiendo mantener aisladas las credenciales de cada ambiente. Además, incorpora una validación del contexto actual del clúster antes de realizar cualquier operación, reduciendo el riesgo de generar secretos sobre un entorno incorrecto.
 
 ## 7. Seguridad
+
+Con el objetivo de proteger la comunicación entre los componentes de la plataforma y resguardar la información sensible, la infraestructura implementa mecanismos de seguridad propios de Kubernetes. 
+En particular, se utilizan Secrets para la gestión de credenciales y Network Policies para controlar el tráfico de red entre los diferentes Pods y servicios del clúster.
+
+### 7.1 Network policy
+
+Inicialmente se aplica una política Default Deny, que bloquea todo el tráfico de entrada y salida de los Pods. A partir de esta configuración, únicamente se habilitan de forma explícita las comunicaciones necesarias para el funcionamiento de la plataforma.
+
+Las principales reglas implementadas son:
+
+- Se permite el tráfico DNS para que los Pods puedan resolver los nombres de los servicios internos del clúster.
+- El Frontend puede recibir conexiones provenientes del Ingress Controller, actuando como único punto de acceso público a la aplicación.
+- El Backend únicamente acepta solicitudes provenientes del Frontend y del servicio de Prometheus encargado de recolectar métricas.
+- El Backend solo puede establecer conexiones hacia PostgreSQL, Redis y Unleash, impidiendo cualquier otra comunicación saliente no autorizada.
+- PostgreSQL únicamente acepta conexiones provenientes del Backend.
+- Redis únicamente acepta conexiones provenientes del Backend.
+
+De esta forma, cada componente de la arquitectura únicamente puede comunicarse con los servicios estrictamente necesarios para cumplir su función, reduciendo la superficie de ataque y limitando el impacto potencial ante una posible vulnerabilidad.
+
+### 7.2 Secretos
+
+Las credenciales y datos sensibles de la aplicación, como contraseñas de bases de datos, claves de acceso y variables de configuración, se administran mediante Kubernetes Secrets. Esta estrategia evita almacenar información confidencial dentro del código fuente o de las imágenes de los contenedores, permitiendo que las aplicaciones consuman estos valores de forma segura durante su ejecución.
+
+## 8. AWS
+
+Además del despliegue sobre un clúster local de K3s, la infraestructura fue diseñada para ser portable y desplegarse sobre Amazon Web Services (AWS). Gracias al uso de Helm Charts parametrizados y a la estrategia GitOps, los mismos manifiestos pueden adaptarse a un entorno cloud modificando únicamente los archivos de configuración (values).
+
+Para ello, la arquitectura contempla el uso de los siguientes servicios de AWS:
+
+- **Amazon EC2:** Instancias virtuales utilizadas para alojar los recursos necesarios de la infraestructura cuando se requiere un entorno administrado manualmente o componentes auxiliares.
+
+- **Amazon EKS:** Servicio administrado de Kubernetes utilizado para ejecutar el clúster en la nube, manteniendo la misma arquitectura implementada en K3s.
+
+- **Application Load Balancer (ALB):** Balanceador de carga encargado de distribuir el tráfico HTTP/HTTPS hacia los servicios publicados dentro del clúster.
+
+- **AWS Secrets Manager:** Servicio utilizado para almacenar y administrar credenciales, contraseñas y otra información sensible de forma segura.
+
+- **Amazon Elastic Container Registry (ECR):** Registro privado de contenedores donde se almacenan las imágenes Docker utilizadas por las aplicaciones antes de su despliegue.
+
+- **NAT Gateway:** Permite que los recursos ubicados en subredes privadas puedan acceder a Internet para descargar imágenes, dependencias o actualizaciones, sin exponerlos directamente al tráfico entrante.

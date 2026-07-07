@@ -36,6 +36,11 @@ Ambiente destinado a la ejecución de la versión estable de la plataforma.
 
 Namespace reservado para la herramienta encargada de implementar la estrategia GitOps y gestionar la sincronización automática entre los repositorios Git y el estado del clúster.
 
+### 2.5 Harbor
+
+Namespace dedicado al registro privado de imágenes utilizado por el clúster.
+Harbor actúa como el registro privado de imágenes de contenedores utilizado por la plataforma. Todas las imágenes Docker generadas durante el proceso de desarrollo son almacenadas en Harbor antes de ser consumidas por Kubernetes durante los despliegues.
+
 ## 3. Aplicaciones implementadas
 
 La plataforma FinFlow se encuentra compuesta por un conjunto de servicios que trabajan de manera integrada para brindar las funcionalidades de la billetera digital. Cada componente cumple una responsabilidad específica dentro de la arquitectura, permitiendo mantener una separación clara entre la presentación, la lógica de negocio, la persistencia de datos, la observabilidad y la configuración dinámica de funcionalidades.

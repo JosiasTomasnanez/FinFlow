@@ -179,7 +179,7 @@ jobs:
           helm package finflow-infra --destination finflow-chart/charts/
           helm dependency list finflow-chart
           helm package finflow-chart --version 1.0.${{ github.run_number }}
-          helm push finflow-chart-1.0.${{ github.run_number }}.tgz oci://${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}
+          helm push finflow-chart-1.0.${{ github.run_number }}.tgz oci://${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }} --insecure-skip-tls-verify
 
       - name: Update Staging Local Tags with yq
         if: github.ref == 'refs/heads/main'

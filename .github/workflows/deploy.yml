@@ -131,6 +131,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          clean: true
 
       - name: Login to Harbor
         uses: docker/login-action@v3
@@ -191,6 +193,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add values-staging.yaml
           git commit -m "chore(gitops): update staging (local/harbor) image tags to ${{ env.IMAGE_TAG }} [skip ci]" || echo "No changes to commit"
+          git clean -fdx --exclude=values-staging.yaml
           git pull --rebase origin main
           git push origin HEAD:main
 

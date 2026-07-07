@@ -16,7 +16,8 @@ spec:
           ingress:
             hosts:
               core: harbor.finflow.local
-        externalURL: http://harbor.finflow.local
+            tls: true
+        externalURL: https://harbor.finflow.local
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: harbor

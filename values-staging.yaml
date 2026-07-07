@@ -1,5 +1,8 @@
 environment: "staging"
 
+networkPolicy:
+  enabled: true
+
 backend:
   replicas: 1
   port: 8080

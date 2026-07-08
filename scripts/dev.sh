@@ -30,8 +30,8 @@ ARGOCD_URL="https://localhost:8080"
 ROLLOUTS_URL="http://localhost:3100"
 
 # Cambiá estas URLs por las de tu ALB
-STAGING_URL="http://k8s-finflowstaginggro-2d1f40137d-1302572390.us-east-1.elb.amazonaws.com"
-PRODUCTION_URL="http://k8s-finflowprodgroup-be3700653a-396980022.us-east-1.elb.amazonaws.com"
+STAGING_URL="http://k8s-finflowstaginggro-2d1f40137d-1302572390.us-east-1.elb.amazonaws.com / http://staging.finflow.local/"
+PRODUCTION_URL="http://k8s-finflowprodgroup-be3700653a-396980022.us-east-1.elb.amazonaws.com / http://prod.finflow.local/"
 
 #############################################
 

@@ -27,7 +27,9 @@ spec:
     - Egress
   egress:
     - to:
-        - namespaceSelector: {}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
       ports:
         - protocol: UDP
           port: 53
@@ -36,7 +38,7 @@ spec:
 
 ---
 # ==============================================================================
-# 3. FRONTEND - Recibe tráfico externo a través de Traefik (puerta pública).
+# 3. FRONTEND INGRESS - Recibe tráfico externo a través de Traefik.
 # ==============================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -59,8 +61,40 @@ spec:
 
 ---
 # ==============================================================================
-# 4. BACKEND - Recibe solo de Traefik (Inbound de API) y de Prometheus 
-#    en finflow-infra para métricas. Ya no recibe del pod frontend.
+# 4. FRONTEND EGRESS - Permite al frontend responder a Traefik, resolver DNS 
+#    y conectarse al backend (crucial si hace Server-Side Rendering / SSR).
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Release.Name }}-frontend
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - podSelector:
+            matchLabels:
+              app: {{ .Release.Name }}-app
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# ==============================================================================
+# 5. BACKEND INGRESS - Recibe solo de Traefik y de Prometheus en finflow-infra.
 # ==============================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -90,7 +124,7 @@ spec:
 
 ---
 # ==============================================================================
-# 5. BACKEND EGRESS - Solo puede hablar con su propia DB, Redis, y Unleash.
+# 6. BACKEND EGRESS - Solo puede hablar con su propia DB, Redis, y Unleash.
 # ==============================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -127,7 +161,7 @@ spec:
 
 ---
 # ==============================================================================
-# 6. DATABASE - Solo el backend le puede hablar. Nadie más, ni el frontend.
+# 7. DATABASE - Solo el backend le puede hablar. Nadie más, ni el frontend.
 # ==============================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -150,7 +184,7 @@ spec:
 
 ---
 # ==============================================================================
-# 7. REDIS - Igual que la DB, solo el backend.
+# 8. REDIS - Igual que la DB, solo el backend.
 # ==============================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

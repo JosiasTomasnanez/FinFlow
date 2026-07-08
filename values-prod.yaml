@@ -1,17 +1,14 @@
 argo-rollouts:
   installCRDs: false
-
 networkPolicy:
   enabled: true
-
-environment: "prod" 
-
+environment: "prod"
 backend:
   replicas: 3
   port: 8080
   image:
     repository: harbor.finflow.local/finflow/finflow-backend
-    tag: v2
+    tag: 9fad4582471743790da75b79fed038f312bc94a3
   databaseHost: "finflow-prod-postgres-service"
   databasePort: "5432"
   redisUrl: "redis://finflow-prod-redis-service:6339/0"
@@ -25,22 +22,19 @@ backend:
     maxReplicas: 10
     cooldownPeriod: 180
     threshold: 25
-
 database:
-  enabled: true       
-  storageSize: 5Gi    
-
+  enabled: true
+  storageSize: 5Gi
 frontend:
   replicas: 3
   image:
     repository: harbor.finflow.local/finflow/finflow-frontend
-    tag: v3
+    tag: 9fad4582471743790da75b79fed038f312bc94a3
   apiUrl: "http://prod.finflow.local/api"
   argoStrategy:
     steps:
       - setWeight: 33
       - pause: {}
-
 ingress:
   enabled: true
   className: "traefik"

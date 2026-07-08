@@ -14,11 +14,11 @@ Con el objetivo de aislar los diferentes ambientes de trabajo, el clúster se or
 
 Cada uno de los entornos de aplicación mantiene sus propios recursos de Kubernetes, tales como Ingress, Services y Pods, permitiendo que las aplicaciones se ejecuten de forma aislada mientras comparten la misma infraestructura física del clúster.
 
-### 2.1 Desarrollo
+### 2.1 infrastructure
 
-Utilizado para el desarrollo e integración inicial de nuevas funcionalidades.
+Utilizado para implementacion de herramientas externas a la aplicacion, como herramientas de monitoreo (prometheus y grafana), autoescalado (keda), feature flags (unleash), entre otras.
 
-![Diagrama entorno de dev](./Diagramas/Diagrama%20entorno%20Infra.jpg)
+![Diagrama entorno de infrastructure](./Diagramas/Diagrama%20entorno%20Infra.jpg)
 
 ### 2.2 Staging
 
@@ -39,7 +39,7 @@ Namespace reservado para la herramienta encargada de implementar la estrategia G
 ### 2.5 Harbor
 
 Namespace dedicado al registro privado de imágenes utilizado por el clúster.
-Harbor actúa como el registro privado de imágenes de contenedores utilizado por la plataforma. Todas las imágenes Docker generadas durante el proceso de desarrollo son almacenadas en Harbor antes de ser consumidas por Kubernetes durante los despliegues.
+Harbor actúa como el registro privado de imágenes de contenedores y charts utilizados por la plataforma. Todas las imágenes Docker generadas durante el proceso de desarrollo son almacenadas en Harbor antes de ser consumidas por Kubernetes durante los despliegues.
 
 ## 3. Aplicaciones implementadas
 
@@ -51,30 +51,31 @@ Los diferentes servicios implementados son:
 
 - **Frontend:** Implementado con React, constituye la interfaz web utilizada por los usuarios para interactuar con la plataforma. Su principal responsabilidad es presentar la información y consumir la API REST expuesta por el backend mediante solicitudes HTTP.
 
-- **PostgreSQL:** Cada entorno dispone de una instancia aislada de PostgreSQL, garantizando la separación de los datos entre Desarrollo, Staging y Producción. La base de datos cuenta con almacenamiento persistente a través de PVC, evitando la pérdida de información ante el reinicio o la recreación de los pods. 
+- **PostgreSQL:** Cada entorno dispone de una instancia aislada de PostgreSQL, garantizando la separación de los datos entre Desarrollo, Staging y Producción. La base de datos cuenta con almacenamiento persistente a través de PVC, evitando la pérdida de información ante el reinicio o la recreación de los pods, por otra parte tiene configurado un "tolerance", diseñado para que pueda ser corrido dentro de un tipo de nodo en particular, mejorando la seguridad y aislamiento de los datos. 
 
 - **Redis:** Se utiliza Redis como sistema de caché entre el backend y PostgreSQL para reducir los tiempos de acceso a la información más consultada. Ante una solicitud, el backend verifica primero la existencia del dato en la caché, si no se encuentra (cache miss), realiza la consulta sobre PostgreSQL y almacena el resultado en Redis para futuras peticiones.
 
-- **Monitoreo y observabilidad:** La plataforma incorpora una solución de monitoreo basada en Prometheus y Grafana. El backend expone métricas mediante un endpoint dedicado, las cuales son recolectadas por Prometheus y posteriormente visualizadas en dashboards de Grafana, permitiendo supervisar el estado y rendimiento de los pods levantados en la infraestructura.
+- **Monitoreo y observabilidad:** La plataforma incorpora una solución de monitoreo basada en Prometheus y Grafana. El backend expone métricas mediante un endpoint dedicado, las cuales son recolectadas por Prometheus y posteriormente visualizadas en dashboards de Grafana, permitiendo supervisar el estado y rendimiento de los pods levantados en la infraestructura. Para lograr la visualizacion correcta de cada pod, se le tuvo que dar privilegios a Prometheus a traves de cluster role.
 
-- **Unleash - Feature Flags:** La gestión dinámica de funcionalidades se realiza mediante Unleash, permitiendo habilitar o deshabilitar características de la aplicación sin necesidad de generar un nuevo despliegue. Esta estrategia facilita la liberación gradual de funcionalidades y reduce el riesgo asociado a la publicación de nuevas versiones.
+- **Unleash - Feature Flags:** La gestión dinámica de funcionalidades se realiza mediante Unleash, permitiendo habilitar o deshabilitar características de la aplicación sin necesidad de generar un nuevo despliegue. Esta estrategia facilita la liberación gradual de funcionalidades y reduce el riesgo asociado a la publicación de nuevas versiones, a traves de diferentes SDK para el entorno de Production y el de Staging.
 
-- **Argo Rollout:** Permite implementar estrategias de despliegue como Rolling update, Canary y Blue/Green. De esta manera las nuevas versiones de las aplicaciones pueden publicarse de forma gradual reduciendo el riesgo de fallos durante una actualización.
+- **Argo Rollout:** implementamos la estrategias de despliegue Canary pero a nivel de pods. De esta manera las nuevas versiones de las aplicaciones pueden publicarse de forma gradual con un control humano previo, mitigando posibles errores a la hora de entregar una nueva version.
+La nueva version es entregada a un 33 por ciento del trafico (33 por ciento de los pods), esperando una accion humana de "promote" para pasar al 100 por ciento luego de realizar las validaciones correspondientes o "rollback" en caso de errores.
 
-- **Secretos:** Administra los secretos de la infraestructura. Las credenciales son cifradas antes de almacenarse en el repositorio y solo pueden ser descifradas por el cluster.
+- **Secretos:** Usamos la herramienta "Sealed Secrets" que administra los secretos de la infraestructura. Las credenciales son cifradas antes de almacenarse en el repositorio y solo pueden ser descifradas por el cluster.
 
-- **Keda:** Proporciona el escalado automático de las aplicaciones mediante la creación dinámica de réplicas.
+- **Keda:** Proporciona el escalado automático de las aplicaciones mediante la creación dinámica de réplicas, decidiendo en base a metricas de cantidad de peticiones que recolecta prometheus.
 
 ## 4. Helm
 
-Con el objetivo de minimizar las configuraciones manuales y mantener una única definición de los recursos de Kubernetes, el proyecto utiliza Helm como gestor de paquetes para la automatización de los despliegues.
+Con el objetivo de minimizar las configuraciones manuales y mantener una única definición de los recursos de Kubernetes, el proyecto utiliza Helm como gestor de paquetes para la automatización de los despliegues, parametrizando de tal forma que solo contamos con unos pocos archivos de configuracion "values" en base al entorno o tipo de cluster (AWS o k3s).
 
-Cada aplicación cuenta con su correspondiente Helm Chart, el cual define la estructura de los recursos de Kubernetes mediante templates. Estas plantillas contienen la definición de los Deployments, Services, Ingress, ConfigMaps, PersistentVolumeClaims y demás recursos necesarios para el funcionamiento de la aplicación.
+Cada aplicación cuenta con su correspondiente Helm Chart, el cual define la estructura de los recursos de Kubernetes mediante templates. Estas plantillas contienen la definición de los Deployments,Rollouts, ServiceAccounts, Namespace, ScaledObject, Services, Ingress, ConfigMaps, PersistentVolumeClaims y demás recursos necesarios para el funcionamiento de la aplicación.
 
 Los principales archivos de configuración corresponden a:
 
-- `values-infra.yaml`: configuración de los componentes del entorno de desarrollo local.
-- `values-infra-aws.yaml`: configuración de los componentes del entorno de desarrollo para AWS.
+- `values-infra.yaml`: configuración de los componentes del entorno de infraestructura local.
+- `values-infra-aws.yaml`: configuración de los componentes del entorno de infraestructura para AWS.
 - `values-staging.yaml`: parámetros del entorno de Staging de manera local.
 - `values-staging-aws.yaml`: configuración específica del despliegue en AWS para Staging.
 - `values-prod.yaml`: parámetros del entorno de Producción de manera local.
@@ -83,7 +84,7 @@ Los principales archivos de configuración corresponden a:
 
 ## 5. Keda
 
-Además de los valores correspondientes a cada entorno, la infraestructura incorpora un archivo de configuración para Keda. Este componente permite definir políticas de escalado automático de los Deployments en función de métricas o eventos, incrementando o reduciendo dinámicamente la cantidad de réplicas según la carga de trabajo.
+Además de los valores correspondientes a cada entorno, la infraestructura incorpora un archivo de configuración para Keda. Este componente permite definir políticas de escalado automático de los Deployments / Rollout en función de métricas de prometheus, incrementando o reduciendo dinámicamente la cantidad de réplicas según la carga de trabajo.
 
 Al igual que el resto de la infraestructura, su configuración se encuentra parametrizada mediante Helm, lo que facilita modificar umbrales de escalado, cantidad mínima y máxima de réplicas, y demás parámetros sin alterar los manifiestos base.
 
@@ -126,12 +127,13 @@ Inicialmente se aplica una política Default Deny, que bloquea todo el tráfico 
 
 Las principales reglas implementadas son:
 
-- Se permite el tráfico DNS para que los Pods puedan resolver los nombres de los servicios internos del clúster.
-- El Frontend puede recibir conexiones provenientes del Ingress Controller, actuando como único punto de acceso público a la aplicación.
-- El Backend únicamente acepta solicitudes provenientes del Frontend y del servicio de Prometheus encargado de recolectar métricas.
-- El Backend solo puede establecer conexiones hacia PostgreSQL, Redis y Unleash, impidiendo cualquier otra comunicación saliente no autorizada.
-- PostgreSQL únicamente acepta conexiones provenientes del Backend.
-- Redis únicamente acepta conexiones provenientes del Backend.
+* **Política de Denegación por Defecto (Zero Trust):** Se implementa un aislamiento estricto (`Default Deny`) para todo el tráfico de entrada (`Ingress`) y salida (`Egress`). Ningún componente puede comunicarse con otro a menos que se autorice explícitamente.
+* **Resolución de Nombres (DNS):** Se habilita de forma global el tráfico de salida hacia el namespace `kube-system` en el puerto 53 (UDP/TCP) para garantizar que los Pods puedan resolver los nombres de los servicios internos del clúster.
+* **Acceso al Frontend:** El Frontend recibe tráfico exclusivamente desde el Ingress Controller (alojado en `kube-system`) en el puerto 3000. Asimismo, se le permite tráfico de salida hacia el Backend (puerto 8080) para soportar estrategias de Server-Side Rendering (SSR).
+* **Control de Entrada del Backend:** El Backend acepta conexiones entrantes únicamente desde el Ingress Controller (en `kube-system`) y desde el namespace de infraestructura `finflow-infra` (para la recolección de métricas de Prometheus).
+* **Control de Salida del Backend:** El Backend tiene restringida su comunicación saliente exclusivamente hacia sus motores de persistencia (PostgreSQL y Redis) y hacia la plataforma de Feature Flags Unleash (puerto 4242) en el namespace de infraestructura.
+* **Aislamiento de PostgreSQL:** La base de datos únicamente acepta conexiones entrantes provenientes del Backend en el puerto 5432, impidiendo el acceso desde el Frontend o cualquier otro componente externo.
+* **Aislamiento de Redis:** El componente de caché únicamente acepta conexiones entrantes provenientes del Backend en el puerto 6339, manteniendo el mismo nivel de restricción que la base de datos.
 
 De esta forma, cada componente de la arquitectura únicamente puede comunicarse con los servicios estrictamente necesarios para cumplir su función, reduciendo la superficie de ataque y limitando el impacto potencial ante una posible vulnerabilidad.
 

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import Login from './Login'
 
 
-// En tu App.jsx cambiar esto:
 const BASE_URL = import.meta.env.VITE_API_URL || ''
 
 const apiFetch = async (path, options = {}) => {

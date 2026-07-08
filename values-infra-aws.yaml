@@ -6,7 +6,6 @@ finflow-infra:
       storageSize: 3Gi
   prometheus:
     monitoredNamespaces:
-      - finflow-infra
       - finflow-staging
       - finflow-prod
 

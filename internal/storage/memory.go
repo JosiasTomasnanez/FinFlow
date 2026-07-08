@@ -7,7 +7,6 @@ import (
 	"github.com/josiastomasnanez/finflow/internal/model"
 )
 
-// Store defines the minimal persistence contract for wallets.
 type Store interface {
 	ListWallets() []model.Wallet
 	GetWallet(id string) (model.Wallet, bool)
@@ -15,14 +14,12 @@ type Store interface {
 	UpdateWallet(wallet model.Wallet) error
 }
 
-// MemoryStore stores wallet data in memory for local development and tests.
 type MemoryStore struct {
 	mu      sync.RWMutex
 	wallets map[string]model.Wallet
 	nextID  int64
 }
 
-// NewMemoryStore creates an in-memory store instance.
 func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
 		wallets: make(map[string]model.Wallet),
@@ -30,7 +27,6 @@ func NewMemoryStore() *MemoryStore {
 	}
 }
 
-// ListWallets returns all wallets stored in memory.
 func (m *MemoryStore) ListWallets() []model.Wallet {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -42,7 +38,6 @@ func (m *MemoryStore) ListWallets() []model.Wallet {
 	return wallets
 }
 
-// GetWallet returns a wallet by its identifier.
 func (m *MemoryStore) GetWallet(id string) (model.Wallet, bool) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -51,7 +46,6 @@ func (m *MemoryStore) GetWallet(id string) (model.Wallet, bool) {
 	return wallet, ok
 }
 
-// SaveWallet stores a new wallet and returns the saved instance.
 func (m *MemoryStore) SaveWallet(wallet model.Wallet) model.Wallet {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -62,7 +56,6 @@ func (m *MemoryStore) SaveWallet(wallet model.Wallet) model.Wallet {
 	return wallet
 }
 
-// UpdateWallet updates an existing wallet state.
 func (m *MemoryStore) UpdateWallet(wallet model.Wallet) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

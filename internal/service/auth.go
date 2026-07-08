@@ -7,14 +7,12 @@ import (
 	"sync"
 )
 
-// AuthService implementa un login muy básico en memoria.
 type AuthService struct {
 	users  map[string]string
 	tokens map[string]string
 	mu     sync.RWMutex
 }
 
-// NewAuthService crea un servicio de autenticación con un usuario por defecto.
 func NewAuthService() *AuthService {
 	return &AuthService{
 		users: map[string]string{
@@ -24,7 +22,6 @@ func NewAuthService() *AuthService {
 	}
 }
 
-// Authenticate valida usuario y contraseña y devuelve un token.
 func (s *AuthService) Authenticate(username, password string) (string, error) {
 	if username == "" || password == "" {
 		return "", fmt.Errorf("username and password are required")
@@ -45,7 +42,6 @@ func (s *AuthService) Authenticate(username, password string) (string, error) {
 	return token, nil
 }
 
-// ValidateToken comprueba si el token existe en memoria.
 func (s *AuthService) ValidateToken(token string) (string, bool) {
 	s.mu.RLock()
 	username, ok := s.tokens[token]

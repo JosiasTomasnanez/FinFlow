@@ -110,13 +110,11 @@ spec:
               value: "false"
             - name: BYPASS_WWW_AUTH_FOR_TESTING
               value: "true"
-            # Inyectamos el Token de Admin desde el Secreto Sellado
             - name: INIT_ADMIN_API_TOKENS
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-unleash-secret
                   key: UNLEASH_ADMIN_TOKEN
-            # Inyectamos los tokens de los entornos concatenados en un solo string desde el Secreto Sellado
             - name: INIT_CLIENT_API_TOKENS
               valueFrom:
                 secretKeyRef:

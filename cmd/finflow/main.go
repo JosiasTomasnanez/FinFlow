@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time" // <-- Manejo de Timeout y Sleep
+	"time" 
 
 	"github.com/Unleash/unleash-client-go/v4"
 	"github.com/josiastomasnanez/finflow/internal/api"
@@ -14,7 +14,6 @@ import (
 	"github.com/josiastomasnanez/finflow/internal/storage"
 )
 
-// Estructura simple para escuchar los eventos de Unleash
 type unleashLogger struct{}
 
 func (l *unleashLogger) OnReady() {
@@ -29,7 +28,6 @@ func (l *unleashLogger) OnRegistered(payload unleash.ClientData) {}
 func main() {
 	loadEnvFile()
 
-	// 1. Inicializar Postgres
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
 		dbURL = os.Getenv("DB_PATH")
@@ -44,14 +42,12 @@ func main() {
 	}
 	defer func() { _ = pgStore.Close() }()
 
-	// 2. Inicializar Redis (Opcional si no viene la URL, para no romper entornos locales viejos)
 	var redisStore *storage.RedisStore
 	redisURL := os.Getenv("REDIS_URL")
 	if redisURL != "" {
 		log.Printf("Connecting to Redis on: %s", redisURL)
 		redisStore, err = storage.NewRedisStore(redisURL)
 		if err != nil {
-			// Lo dejamos como un Warning por si querés levantar la app sin Redis de forma temporal
 			log.Printf("Warning: failed to initialize redis store: %v. Proceeding without cache.", err)
 		} else {
 			log.Println("🟢 Redis conectado exitosamente.")
@@ -60,7 +56,6 @@ func main() {
 		log.Println("Warning: REDIS_URL not found. App will run without caching mechanism.")
 	}
 
-	// 3. Inicializar Unleash Feature Flags
 	unleashURL := os.Getenv("UNLEASH_URL")
 	unleashToken := os.Getenv("UNLEASH_TOKEN")
 
@@ -89,7 +84,6 @@ func main() {
 		log.Println("Warning: UNLEASH_URL or UNLEASH_TOKEN not found. Feature flags will default to false.")
 	}
 
-	// 4. Inyectar dependencias (Postgres y Redis) al servicio
 	walletService := service.NewWalletService(pgStore, redisStore)
 	authService := service.NewAuthService()
 	server := api.NewServer(walletService, authService)

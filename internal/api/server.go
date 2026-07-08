@@ -9,7 +9,6 @@ import (
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
 
-// NewServer returns a configured HTTP server for the FinFlow API.
 func NewServer(walletService *service.WalletService, authService *service.AuthService) *http.Server {
 	router := gin.Default()
 

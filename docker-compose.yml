@@ -37,7 +37,7 @@ services:
       unleash-web:
         condition: service_healthy
       finflow-redis: 
-        condition: service_healthy # Espera el ping del healthcheck
+        condition: service_healthy
     networks:
       - finflow-net
 

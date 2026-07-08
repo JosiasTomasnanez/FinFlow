@@ -62,7 +62,7 @@ spec:
 ---
 # ==============================================================================
 # 4. FRONTEND EGRESS - Permite al frontend responder a Traefik, resolver DNS 
-#    y conectarse al backend (crucial si hace Server-Side Rendering / SSR).
+#    y conectarse al backend.
 # ==============================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

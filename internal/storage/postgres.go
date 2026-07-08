@@ -15,7 +15,6 @@ type PostgresStore struct {
 	db *sql.DB
 }
 
-// NewPostgresStore connects to Postgres using a DSN and ensures schema exists.
 func NewPostgresStore(dsn string) (*PostgresStore, error) {
 	if dsn == "" {
 		return nil, fmt.Errorf("DATABASE_URL is required")

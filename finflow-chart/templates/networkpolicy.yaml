@@ -15,8 +15,7 @@ spec:
 
 ---
 # ==============================================================================
-# 2. DNS - Sin esto, ningún pod puede resolver nombres de Service (postgres,
-#    redis, unleash-web, etc). Es la regla que todos olvidan y todo se rompe.
+# 2. DNS - Permite resolver nombres de Service (postgres, redis, unleash, etc).
 # ==============================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -37,8 +36,7 @@ spec:
 
 ---
 # ==============================================================================
-# 3. FRONTEND - Recibe tráfico de cualquier lado (es la puerta pública, el
-#    Ingress Controller se encarga de filtrar antes de llegar acá).
+# 3. FRONTEND - Recibe tráfico externo a través de Traefik (puerta pública).
 # ==============================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -51,12 +49,18 @@ spec:
   policyTypes:
     - Ingress
   ingress:
-    - {}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: TCP
+          port: 80
 
 ---
 # ==============================================================================
-# 4. BACKEND - Solo recibe del frontend (mismo namespace) y de Prometheus
-#    (namespace finflow-infra, para scrapear /metrics).
+# 4. BACKEND - Recibe EXCLUSIVAMENTE de Traefik (Inbound de API) y de Prometheus 
+#    en finflow-infra para métricas. Ya no recibe del pod frontend.
 # ==============================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -69,13 +73,15 @@ spec:
   policyTypes:
     - Ingress
   ingress:
+    # Tráfico que viene desde la afuera redirigido por Traefik
     - from:
-        - podSelector:
+        - namespaceSelector:
             matchLabels:
-              app: {{ .Release.Name }}-frontend
+              kubernetes.io/metadata.name: kube-system
       ports:
         - protocol: TCP
           port: 8080
+    # Tráfico de monitoreo /metrics
     - from:
         - namespaceSelector:
             matchLabels:
@@ -86,8 +92,7 @@ spec:
 
 ---
 # ==============================================================================
-# 5. BACKEND EGRESS - Solo puede hablar con su propia DB, Redis, y Unleash
-#    (en finflow-infra). Nada más, ni siquiera internet.
+# 5. BACKEND EGRESS - Solo puede hablar con su propia DB, Redis, y Unleash.
 # ==============================================================================
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -167,24 +172,4 @@ spec:
       ports:
         - protocol: TCP
           port: 6339
-
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-frontend-egress
-spec:
-  podSelector:
-    matchLabels:
-      app: {{ .Release.Name }}-frontend
-  policyTypes:
-    - Egress
-  egress:
-    - to:
-        - podSelector:
-            matchLabels:
-              app: {{ .Release.Name }}-app
-      ports:
-        - protocol: TCP
-          port: 8080
 {{- end }}

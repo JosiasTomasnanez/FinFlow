@@ -1,5 +1,10 @@
 # Construcción y orquestación de contenedores
 
+## 0. Integrantes
+
+- Josias Tomas Ñañez
+- Jeronimo Massaro
+
 ## 1. Descripción de FinFlow
 
 FinFlow es una startup fintech en crecimiento que opera una billetera digital y una plataforma de pagos diseñada para individuos, comercios y PYMEs. La plataforma centraliza transferencias entre usuarios (P2P), saldos de billeteras digitales y el procesamiento de pagos mediante una API REST.

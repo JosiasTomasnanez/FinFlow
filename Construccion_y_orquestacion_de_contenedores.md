@@ -14,6 +14,8 @@ Con el objetivo de aislar los diferentes ambientes de trabajo, el clúster se or
 
 Cada uno de los entornos de aplicación mantiene sus propios recursos de Kubernetes, tales como Ingress, Services y Pods, permitiendo que las aplicaciones se ejecuten de forma aislada mientras comparten la misma infraestructura física del clúster.
 
+![Diagrama de coneccion de namespaces](./Diagramas/Diagrama%20gitops.jpg)
+
 ### 2.1 infrastructure
 
 Utilizado para implementacion de herramientas externas a la aplicacion, como herramientas de monitoreo (prometheus y grafana), autoescalado (keda), feature flags (unleash), entre otras.

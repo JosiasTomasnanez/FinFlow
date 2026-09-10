@@ -1,0 +1,33 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: finflow
+
+servers: 1
+agents: 0
+
+ports:
+  - port: 80:80
+    nodeFilters:
+      - loadbalancer
+  - port: 443:443
+    nodeFilters:
+      - loadbalancer
+
+kubeAPI:
+  hostPort: "44843"
+
+hostAliases:
+  - ip: ${HARBOR_TAILSCALE_IP}
+    hostnames:
+      - harbor.finflow.local
+
+options:
+  k3s:
+    extraArgs:
+      - arg: --tls-san=0.0.0.0
+        nodeFilters:
+          - server:*
+      - arg: --tls-san=k3d-finflow-serverlb
+        nodeFilters:
+          - server:*

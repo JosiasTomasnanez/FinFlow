@@ -10,6 +10,7 @@
 *.out
 
 #secrets & AWS config
+k3d-config.yaml
 secrets/*.env
 iam_policy.json
 master-sealed-secret-key.yaml

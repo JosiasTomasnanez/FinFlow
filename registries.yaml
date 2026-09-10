@@ -1,0 +1,8 @@
+mirrors:
+  "harbor.finflow.local":
+    endpoint:
+      - "https://harbor.finflow.local"
+configs:
+  "harbor.finflow.local":
+    tls:
+      insecure_skip_verify: true

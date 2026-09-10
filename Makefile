@@ -31,6 +31,10 @@ resolve-ip:
 
 ## 2. Genera k3d-config.yaml a partir del template (este archivo NO se commitea)
 render-config:
+	@if [ ! -f registries.yaml ]; then \
+		echo "❌ No encuentro registries.yaml en la raíz del repo (necesario para que el nodo confíe en Harbor)."; \
+		exit 1; \
+	fi
 	@HARBOR_TAILSCALE_IP=$$(cat .harbor-ip) envsubst < k3d-config.yaml.tmpl > k3d-config.yaml
 	@echo "📝 k3d-config.yaml generado."
 

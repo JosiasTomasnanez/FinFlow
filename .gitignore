@@ -31,3 +31,4 @@ frontend/dist/
 
 # Docker
 docker-compose.*.yml
+secrets/sealed-secrets-master-key.yaml

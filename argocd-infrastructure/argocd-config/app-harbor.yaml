@@ -12,8 +12,6 @@ spec:
     helm:
       values: |
         harborAdminPassword: "Harbor12345"
-        existingSecretAdminPassword: "finflow-infra-unleash-secret"
-        existingSecretAdminPasswordKey: "HARBOR_ADMIN_PASSWORD"
         expose:
           type: ingress
           ingress:

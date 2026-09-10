@@ -7,14 +7,14 @@ SEALED_SECRETS_KEY := secrets/sealed-secrets-master-key.yaml
 KUBECONFIG_FILE    := $(HOME)/.k3d/kubeconfig-$(CLUSTER_NAME).yaml
 
 .PHONY: all up down clean render-config resolve-ip cluster-up wait-cluster \
-        restore-sealed-secrets-key bootstrap-argocd wait-argocd apply-root status
+        restore-sealed-secrets-key bootstrap-argocd wait-argocd apply-argocd-config apply-root status
 
 all: up
 
-## Pipeline completo: cluster + clave de sealed-secrets + Argo CD + app-of-apps
-up: resolve-ip render-config cluster-up wait-cluster restore-sealed-secrets-key bootstrap-argocd wait-argocd apply-root
+## Pipeline completo: cluster + clave de sealed-secrets + Argo CD + argocd-config + app-of-apps
+up: resolve-ip render-config cluster-up wait-cluster restore-sealed-secrets-key bootstrap-argocd wait-argocd apply-argocd-config apply-root
 	@echo ""
-	@echo "✅ Cluster arriba. Argo CD está sincronizando el resto (harbor, sealed-secrets, apps-local)."
+	@echo "✅ Cluster arriba. Argo CD está sincronizando el resto (harbor, apps-local)."
 	@echo "   Mirá el progreso con: kubectl get applications -n argocd"
 
 ## 1. Resuelve la IP de Tailscale del host que corre Harbor
@@ -56,6 +56,7 @@ restore-sealed-secrets-key:
 		exit 1; \
 	fi
 	@kubectl create namespace kube-system --dry-run=client -o yaml | kubectl apply -f -
+	@kubectl delete secret -n kube-system -l sealedsecrets.bitnami.com/sealed-secrets-key=active --ignore-not-found=true
 	@kubectl apply -n kube-system -f $(SEALED_SECRETS_KEY)
 	@echo "🔑 Clave de sealed-secrets restaurada en kube-system."
 	@kubectl delete pod -n kube-system -l app.kubernetes.io/name=sealed-secrets --ignore-not-found=true
@@ -65,15 +66,26 @@ restore-sealed-secrets-key:
 ##    Argo CD de otra forma (helm, script propio, etc.) reemplazá esta receta.
 bootstrap-argocd:
 	@kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
-	@kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+	@kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 ## 7. Espera a que el server de Argo CD esté listo
 wait-argocd:
 	@echo "⏳ Esperando a que Argo CD esté listo..."
 	@kubectl wait --for=condition=available deployment/argocd-server -n argocd --timeout=300s
 
-## 8. Aplica la app-of-apps raíz: de acá en más, Argo CD toma el control
-##    (se auto-gestiona, instala sealed-secrets, harbor, y las apps locales)
+## 8. Aplica manualmente lo que antes hacías a mano: sealed-secrets, harbor y
+##    el self-management de Argo CD (argocd-config/). Deben ir ANTES que
+##    apps-local, porque finflow-staging/prod dependen del CRD SealedSecret.
+apply-argocd-config:
+	@kubectl apply -n argocd -f argocd-infrastructure/argocd-config/
+	@echo "⏳ Esperando a que el CRD de sealed-secrets quede registrado..."
+	@until kubectl get crd sealedsecrets.bitnami.com >/dev/null 2>&1; do sleep 3; done
+	@echo "⏳ Esperando a que el controller de sealed-secrets esté disponible..."
+	@kubectl wait --for=condition=available deployment -n kube-system -l app.kubernetes.io/name=sealed-secrets --timeout=180s || true
+	@echo "✅ argocd-config aplicado y sealed-secrets listo."
+
+## 9. Aplica la app-of-apps raíz: de acá en más, Argo CD toma el control
+##    de apps-local (finflow-infra, finflow-prod, finflow-staging, keda)
 apply-root:
 	@kubectl apply -f argocd-infrastructure/root-local.yaml -n argocd
 

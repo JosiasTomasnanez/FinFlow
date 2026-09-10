@@ -17,8 +17,6 @@ spec:
       labels:
         app: {{ .Release.Name }}-frontend
     spec:
-      imagePullSecrets:
-        - name: harbor-pull-secret
       containers:
         - name: finflow-frontend
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"

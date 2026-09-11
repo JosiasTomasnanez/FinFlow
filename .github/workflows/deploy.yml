@@ -33,6 +33,10 @@ jobs:
     name: Build & Push to Amazon ECR (Cloud)
     runs-on: ubuntu-latest
     needs: bypass-checks
+    # --- DESACTIVADO TEMPORALMENTE ---
+    # Se pone en 'false' para skipear la prueba en AWS mientras el clúster esté caído.
+    # Cambiar a 'if: true' o eliminar esta línea cuando AWS vuelva a estar activo.
+    if: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -48,11 +52,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # --- Habilitar Buildx y QEMU para Multiarquitectura (AMD64 + ARM64) ---
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and Push Backend Image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ${{ env.ECR_REGISTRY }}/finflow-backend:${{ env.IMAGE_TAG }}
@@ -63,6 +75,7 @@ jobs:
         with:
           context: ./frontend
           file: ./frontend/Dockerfile.dev
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ${{ env.ECR_REGISTRY }}/finflow-frontend:${{ env.IMAGE_TAG }}
@@ -130,13 +143,20 @@ jobs:
     name: Build & Push to Harbor (Local)
     runs-on: self-hosted
     needs: bypass-checks
-    timeout-minutes: 10
+    timeout-minutes: 15
     continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           clean: true
+
+      # --- Habilitar Buildx y QEMU para Multiarquitectura (AMD64 + ARM64) ---
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to Harbor
         uses: docker/login-action@v3
@@ -150,6 +170,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}
@@ -160,6 +181,7 @@ jobs:
         with:
           context: ./frontend
           file: ./frontend/Dockerfile.dev
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}

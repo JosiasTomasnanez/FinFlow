@@ -23,7 +23,7 @@ hostAliases:
       - harbor.finflow.local
 
 volumes:
-  - volume: ./registries.yaml:/etc/rancher/k3s/registries.yaml
+  - volume: $PWD/registries.yaml:/etc/rancher/k3s/registries.yaml
     nodeFilters:
       - server:*
 

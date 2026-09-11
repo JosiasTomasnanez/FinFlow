@@ -6,16 +6,43 @@ TAILSCALE_HOST     ?= josias-latitude-e5450
 SEALED_SECRETS_KEY := secrets/sealed-secrets-master-key.yaml
 KUBECONFIG_FILE    := $(HOME)/.k3d/kubeconfig-$(CLUSTER_NAME).yaml
 
-.PHONY: all up down clean render-config resolve-ip cluster-up wait-cluster \
-        restore-sealed-secrets-key bootstrap-argocd wait-argocd apply-argocd-config apply-root status
+.PHONY: all up down clean doctor render-config resolve-ip cluster-up wait-cluster \
+        restore-sealed-secrets-key bootstrap-argocd wait-argocd apply-argocd-config apply-root \
+        wait-apps status debug logs-failing check-harbor
 
 all: up
 
-## Pipeline completo: cluster + clave de sealed-secrets + Argo CD + argocd-config + app-of-apps
-up: resolve-ip render-config cluster-up wait-cluster restore-sealed-secrets-key bootstrap-argocd wait-argocd apply-argocd-config apply-root
+## Pipeline completo: chequeo de dependencias + cluster + clave de sealed-secrets + Argo CD + argocd-config + app-of-apps
+up: doctor resolve-ip render-config cluster-up wait-cluster restore-sealed-secrets-key bootstrap-argocd wait-argocd apply-argocd-config apply-root wait-apps
 	@echo ""
-	@echo "✅ Cluster arriba. Argo CD está sincronizando el resto (harbor, apps-local)."
-	@echo "   Mirá el progreso con: kubectl get applications -n argocd"
+	@echo "✅ Cluster arriba y Argo CD sincronizado."
+	@echo "   Ver estado en cualquier momento con: make status"
+
+## 0. Verifica que las herramientas necesarias estén instaladas ANTES de tocar nada.
+##    No reemplaza instalarlas: solo evita que 'make up' falle a mitad de camino
+##    con un error críptico.
+doctor:
+	@ok=1; \
+	for bin in docker k3d kubectl tailscale envsubst; do \
+		if ! command -v $$bin >/dev/null 2>&1; then \
+			echo "❌ Falta '$$bin' en el PATH. Instalalo antes de seguir."; ok=0; \
+		fi; \
+	done; \
+	if command -v docker >/dev/null 2>&1 && ! docker info >/dev/null 2>&1; then \
+		echo "❌ Docker está instalado pero no responde (¿está corriendo el daemon? ¿tenés permisos?)."; ok=0; \
+	fi; \
+	if [ ! -f registries.yaml ]; then \
+		echo "❌ Falta registries.yaml en la raíz del repo (viene versionado en git, revisá el clone)."; ok=0; \
+	fi; \
+	if [ ! -f $(SEALED_SECRETS_KEY) ]; then \
+		echo "⚠️  Falta $(SEALED_SECRETS_KEY) (no viaja en el repo por seguridad)."; \
+		echo "    Pedísela a Josias por un canal seguro y colocala en esa ruta antes de correr 'make up'."; \
+	fi; \
+	if [ $$ok -eq 1 ]; then \
+		echo "✅ Dependencias básicas OK."; \
+	else \
+		echo ""; echo "🛑 Resolvé lo anterior antes de correr 'make up'."; exit 1; \
+	fi
 
 ## 1. Resuelve la IP de Tailscale del host que corre Harbor
 resolve-ip:
@@ -93,9 +120,51 @@ apply-argocd-config:
 apply-root:
 	@kubectl apply -f argocd-infrastructure/root-local.yaml -n argocd
 
+## 10. Espera a que TODAS las Applications de Argo CD queden Synced + Healthy
+##     (hasta acá 'up' solo aplicaba manifiestos, no confirmaba que hayan prendido).
+wait-apps:
+	@echo "⏳ Esperando a que Argo CD sincronice todas las Applications (puede tardar varios minutos)..."
+	@for i in $$(seq 1 60); do \
+		total=$$(kubectl get applications -n argocd --no-headers 2>/dev/null | wc -l | tr -d ' '); \
+		ready=$$(kubectl get applications -n argocd -o jsonpath='{range .items[*]}{.status.sync.status}{" "}{.status.health.status}{"\n"}{end}' 2>/dev/null | grep -c "^Synced Healthy$$" || true); \
+		if [ "$$total" -gt 0 ] && [ "$$ready" = "$$total" ]; then \
+			echo "✅ Las $$total Applications están Synced + Healthy."; \
+			exit 0; \
+		fi; \
+		echo "   ($$ready/$$total listas, intento $$i/60) reintentando en 10s..."; \
+		sleep 10; \
+	done; \
+	echo "⚠️  Timeout esperando que todas las apps queden Healthy."; \
+	echo "    Revisá con 'make debug' o 'make logs-failing'. El cluster sigue arriba igual."
+
 ## Ver el estado de las Applications de Argo CD
 status:
 	@kubectl get applications -n argocd
+
+## Diagnóstico rápido: nodos, pods que no están Running/Completed, y Applications
+debug:
+	@echo "── Nodos ──"; kubectl get nodes -o wide
+	@echo ""; echo "── Pods que NO están Running/Completed (todos los namespaces) ──"; \
+	kubectl get pods -A --field-selector=status.phase!=Running,status.phase!=Succeeded 2>/dev/null || true
+	@echo ""; echo "── Applications de Argo CD ──"; kubectl get applications -n argocd
+
+## Logs (o describe si no hay logs) de cada pod que no está Ready. Útil para debug rápido en grupo.
+logs-failing:
+	@kubectl get pods -A --no-headers 2>/dev/null | awk '$$4 != "Running" && $$4 != "Completed" {print $$1, $$2}' | while read -r ns pod; do \
+		echo "── $$ns/$$pod ──"; \
+		kubectl logs -n "$$ns" "$$pod" --tail=30 --all-containers 2>/dev/null || kubectl describe pod -n "$$ns" "$$pod" | tail -20; \
+		echo ""; \
+	done
+
+## Prueba que el cluster pueda resolver y hablar con Harbor vía la IP de Tailscale
+## (corré 'make resolve-ip' antes si no lo hiciste en esta sesión)
+check-harbor:
+	@if [ ! -f .harbor-ip ]; then echo "❌ Corré 'make resolve-ip' primero."; exit 1; fi
+	@kubectl run harbor-check --rm -i --restart=Never --image=curlimages/curl:latest --quiet -- \
+		curl -sk -o /dev/null -w "HTTP %{http_code}\n" \
+		--resolve harbor.finflow.local:443:$$(cat .harbor-ip) \
+		https://harbor.finflow.local/v2/ \
+	&& echo "✅ Harbor responde." || echo "❌ No se pudo contactar a Harbor (revisá Tailscale y el /etc/hosts del nodo k3d)."
 
 ## Borra el cluster completo
 down:

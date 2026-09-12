@@ -156,12 +156,22 @@ jobs:
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v3
         with:
           driver-opts: network=host
           config-inline: |
             [registry."harbor.finflow.local"]
               insecure = true
+              ca = ["/etc/buildkit/certs/harbor-ca.crt"]
+
+      - name: Confiar en la CA de Harbor dentro del builder de Buildx
+        run: |
+          BUILDER_CONTAINER=$(docker ps --filter "name=buildx_buildkit_${{ steps.buildx.outputs.name }}" --format '{{.Names}}')
+          docker exec "$BUILDER_CONTAINER" mkdir -p /etc/buildkit/certs
+          docker cp .github/certs/harbor-ca.crt "$BUILDER_CONTAINER":/etc/buildkit/certs/harbor-ca.crt
+          docker cp .github/certs/harbor-ca.crt "$BUILDER_CONTAINER":/usr/local/share/ca-certificates/harbor-ca.crt
+          docker exec "$BUILDER_CONTAINER" update-ca-certificates
 
       - name: Login to Harbor
         uses: docker/login-action@v3
@@ -233,7 +243,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir -p $HOME/.local/bin
-          wget https://github.com/mikefarah/yq/releases/latest/sign/download/yq_linux_amd64 -O $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
           export PATH="$HOME/.local/bin:$PATH"
           yq -i '.backend.image.tag = "${{ env.IMAGE_TAG }}"' values-prod.yaml
           yq -i '.frontend.image.tag = "${{ env.IMAGE_TAG }}"' values-prod.yaml

@@ -151,28 +151,9 @@ jobs:
         with:
           clean: true
 
-      # --- Habilitar Buildx y QEMU para Multiarquitectura (AMD64 + ARM64) ---
+      # --- Habilitar QEMU para poder compilar arm64 en un runner amd64 ---
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: network=host
-          config-inline: |
-            [registry."harbor.finflow.local"]
-              insecure = true
-
-      - name: Confiar en la CA de Harbor dentro del builder de Buildx
-        run: |
-          BUILDER_CONTAINER=$(docker ps --filter "name=buildx_buildkit_${{ steps.buildx.outputs.name }}" --format '{{.Names}}')
-          docker cp .github/certs/harbor-ca.crt "$BUILDER_CONTAINER":/tmp/harbor-ca.crt
-          docker exec "$BUILDER_CONTAINER" sh -c '
-            for f in /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt /etc/ssl/ca-bundle.pem /etc/pki/tls/cacert.pem /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem /etc/ssl/cert.pem; do
-              if [ -f "$f" ]; then cat /tmp/harbor-ca.crt >> "$f"; fi
-            done
-          '
 
       - name: Login to Harbor
         uses: docker/login-action@v3
@@ -181,27 +162,57 @@ jobs:
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ secrets.HARBOR_PASSWORD }}
 
-      - name: Build and Push Backend Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}
-            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:latest
+      # --- Backend: se compila cada arquitectura por separado y se pushea con el
+      #     Docker normal del runner (el que ya confía en Harbor), evitando el
+      #     contenedor aislado de Buildx que no comparte esa confianza. ---
+      - name: Build Backend (amd64 + arm64) y cargar en Docker local
+        run: |
+          docker buildx build --platform linux/amd64 --load \
+            -f ./Dockerfile \
+            -t ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64 .
+          docker buildx build --platform linux/arm64 --load \
+            -f ./Dockerfile \
+            -t ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64 .
 
-      - name: Build and Push Frontend Image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile.dev
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}
-            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:latest
+      - name: Push imágenes por arquitectura (Backend)
+        run: |
+          docker push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64
+          docker push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64
+
+      - name: Armar y pushear manifest multi-arch (Backend)
+        run: |
+          export DOCKER_CLI_EXPERIMENTAL=enabled
+          for tag in ${{ env.IMAGE_TAG }} latest; do
+            docker manifest create ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:$tag \
+              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64 \
+              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64
+            docker manifest push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:$tag
+          done
+
+      # --- Frontend: mismo esquema ---
+      - name: Build Frontend (amd64 + arm64) y cargar en Docker local
+        run: |
+          docker buildx build --platform linux/amd64 --load \
+            -f ./frontend/Dockerfile.dev \
+            -t ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64 ./frontend
+          docker buildx build --platform linux/arm64 --load \
+            -f ./frontend/Dockerfile.dev \
+            -t ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64 ./frontend
+
+      - name: Push imágenes por arquitectura (Frontend)
+        run: |
+          docker push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64
+          docker push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64
+
+      - name: Armar y pushear manifest multi-arch (Frontend)
+        run: |
+          export DOCKER_CLI_EXPERIMENTAL=enabled
+          for tag in ${{ env.IMAGE_TAG }} latest; do
+            docker manifest create ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:$tag \
+              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64 \
+              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64
+            docker manifest push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:$tag
+          done
 
       - name: Set up Helm
         uses: azure/setup-helm@v4

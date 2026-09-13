@@ -2,16 +2,18 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"strings"
-	"time" 
+	"time"
 
 	"github.com/Unleash/unleash-client-go/v4"
 	"github.com/josiastomasnanez/finflow/internal/api"
 	"github.com/josiastomasnanez/finflow/internal/service"
 	"github.com/josiastomasnanez/finflow/internal/storage"
+	"github.com/josiastomasnanez/finflow/internal/telemetry"
 )
 
 type unleashLogger struct{}
@@ -27,6 +29,21 @@ func (l *unleashLogger) OnRegistered(payload unleash.ClientData) {}
 
 func main() {
 	loadEnvFile()
+
+	// --- 1. Inicializar OpenTelemetry SDK ---
+	ctx := context.Background()
+	shutdownTracer, err := telemetry.InitTracer(ctx, "finflow-backend")
+	if err != nil {
+		log.Printf("Warning: failed to initialize tracer: %v. Continuing without tracing.", err)
+	} else {
+		defer func() {
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := shutdownTracer(shutdownCtx); err != nil {
+				log.Printf("Error shutting down tracer provider: %v", err)
+			}
+		}()
+	}
 
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {

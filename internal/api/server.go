@@ -2,7 +2,7 @@ package api
 
 import (
 	"net/http"
-
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/josiastomasnanez/finflow/internal/service"
@@ -37,7 +37,7 @@ func NewServer(walletService *service.WalletService, authService *service.AuthSe
 
 	return &http.Server{
 		Addr:    ":8080",
-		Handler: router,
+		Handler: otelhttp.NewHandler(router, "finflow-backend"),
 	}
 }
 

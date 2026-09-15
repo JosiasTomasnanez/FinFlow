@@ -1,20 +1,22 @@
 package service
 
 import (
+	"context"
 	"testing"
 
 	"github.com/josiastomasnanez/finflow/internal/storage"
 )
 
 func TestCreateAndTransfer(t *testing.T) {
+	ctx := context.Background()
 	store := storage.NewMemoryStore()
-	service := NewWalletService(store)
+	service := NewWalletService(store, nil)
 
-	walletA, err := service.CreateWallet("alice", 1000)
+	walletA, err := service.CreateWallet(ctx, "alice", 1000)
 	if err != nil {
 		t.Fatalf("failed to create wallet A: %v", err)
 	}
-	walletB, err := service.CreateWallet("bob", 500)
+	walletB, err := service.CreateWallet(ctx, "bob", 500)
 	if err != nil {
 		t.Fatalf("failed to create wallet B: %v", err)
 	}
@@ -26,7 +28,7 @@ func TestCreateAndTransfer(t *testing.T) {
 		t.Fatalf("unexpected balance for wallet B: got %d", walletB.Balance)
 	}
 
-	result, err := service.Transfer(walletA.ID, walletB.ID, 300)
+	result, err := service.Transfer(ctx, walletA.ID, walletB.ID, 300)
 	if err != nil {
 		t.Fatalf("transfer failed: %v", err)
 	}
@@ -34,8 +36,8 @@ func TestCreateAndTransfer(t *testing.T) {
 		t.Fatalf("expected transferred amount 300, got %d", result.Amount)
 	}
 
-	updatedA, _ := service.GetWallet(walletA.ID)
-	updatedB, _ := service.GetWallet(walletB.ID)
+	updatedA, _ := service.GetWallet(ctx, walletA.ID)
+	updatedB, _ := service.GetWallet(ctx, walletB.ID)
 
 	if updatedA.Balance != 700 {
 		t.Fatalf("expected wallet A balance 700, got %d", updatedA.Balance)
@@ -46,34 +48,36 @@ func TestCreateAndTransfer(t *testing.T) {
 }
 
 func TestTransferInsufficientBalance(t *testing.T) {
+	ctx := context.Background()
 	store := storage.NewMemoryStore()
-	service := NewWalletService(store)
+	service := NewWalletService(store, nil)
 
-	walletA, err := service.CreateWallet("carla", 100)
+	walletA, err := service.CreateWallet(ctx, "carla", 100)
 	if err != nil {
 		t.Fatalf("failed to create wallet A: %v", err)
 	}
-	walletB, err := service.CreateWallet("diego", 100)
+	walletB, err := service.CreateWallet(ctx, "diego", 100)
 	if err != nil {
 		t.Fatalf("failed to create wallet B: %v", err)
 	}
 
-	_, err = service.Transfer(walletA.ID, walletB.ID, 200)
+	_, err = service.Transfer(ctx, walletA.ID, walletB.ID, 200)
 	if err == nil {
 		t.Fatal("expected transfer to fail due to insufficient funds")
 	}
 }
 
 func TestCreateWalletValidation(t *testing.T) {
+	ctx := context.Background()
 	store := storage.NewMemoryStore()
-	service := NewWalletService(store)
+	service := NewWalletService(store, nil)
 
-	_, err := service.CreateWallet("", 100)
+	_, err := service.CreateWallet(ctx, "", 100)
 	if err == nil {
 		t.Fatal("expected error when owner is empty")
 	}
 
-	_, err = service.CreateWallet("elena", -10)
+	_, err = service.CreateWallet(ctx, "elena", -10)
 	if err == nil {
 		t.Fatal("expected error when initial balance is negative")
 	}

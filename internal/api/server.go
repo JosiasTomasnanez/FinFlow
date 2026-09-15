@@ -10,7 +10,12 @@ import (
 )
 
 func NewServer(walletService *service.WalletService, authService *service.AuthService) *http.Server {
-	router := gin.Default()
+	// Usamos gin.New() en vez de gin.Default() para reemplazar el logger
+	// de texto plano de Gin por nuestro RequestIDMiddleware, que loguea
+	// en JSON e incluye el request_id de correlación.
+	router := gin.New()
+	router.Use(gin.Recovery())
+	router.Use(RequestIDMiddleware())
 
 	router.Use(cors.Default())
 

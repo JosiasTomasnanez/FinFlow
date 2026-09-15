@@ -9,9 +9,18 @@ prometheus:
     - finflow-staging
     - finflow-prod
 
+jaeger:
+  enabled: true
+  image:
+    repository: jaegertracing/all-in-one
+    tag: "1.57"
+  storageSize: 5Gi
+  storageClass: ""
+
 ingress:
   enabled: true
   className: "traefik"
   hosts:
     unleash: "unleash.finflow.local"
     grafana: "grafana.finflow.local"
+    jaeger: "jaeger.finflow.local"

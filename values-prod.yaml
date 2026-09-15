@@ -13,6 +13,7 @@ backend:
   databasePort: "5432"
   redisUrl: "redis://finflow-prod-redis-service:6339/0"
   unleashUrl: "http://unleash-web.finflow-infra.svc.cluster.local:4242/api"
+  otelExporterOtlpEndpoint: "finflow-infra-jaeger.finflow-infra.svc.cluster.local:4317"
   argoStrategy:
     steps:
       - setWeight: 33

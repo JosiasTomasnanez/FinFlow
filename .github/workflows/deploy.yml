@@ -207,22 +207,25 @@ jobs:
           docker push \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64
 
-      # --- IMPORTANTE:
-      #     Se elimina --amend para no reutilizar referencias antiguas
-      #     del manifest existente en Harbor. ---
       - name: Armar y pushear manifest multi-arch (Backend)
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
 
-          for tag in ${{ env.IMAGE_TAG }} latest; do
-            docker manifest create \
-              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:$tag \
-              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64 \
-              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64
+          docker manifest create --amend \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }} \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64 \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64
 
-            docker manifest push \
-              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:$tag
-          done
+          docker manifest push \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}
+
+          docker manifest create --amend \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:latest \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64 \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64
+
+          docker manifest push \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:latest
 
       # --- Frontend: mismo esquema ---
       - name: Build Frontend (amd64 + arm64) y cargar en Docker local
@@ -245,21 +248,25 @@ jobs:
           docker push \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64
 
-      # --- IMPORTANTE:
-      #     Se elimina --amend también en Frontend. ---
       - name: Armar y pushear manifest multi-arch (Frontend)
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
 
-          for tag in ${{ env.IMAGE_TAG }} latest; do
-            docker manifest create \
-              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:$tag \
-              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64 \
-              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64
+          docker manifest create --amend \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }} \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64 \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64
 
-            docker manifest push \
-              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:$tag
-          done
+          docker manifest push \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}
+
+          docker manifest create --amend \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:latest \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64 \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64
+
+          docker manifest push \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:latest
 
       - name: Set up Helm
         uses: azure/setup-helm@v4

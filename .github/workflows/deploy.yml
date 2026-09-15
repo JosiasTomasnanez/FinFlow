@@ -211,7 +211,11 @@ jobs:
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
 
-          docker manifest create --amend \
+          docker manifest rm \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }} \
+            || true
+
+          docker manifest create \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }} \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64 \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64
@@ -219,7 +223,11 @@ jobs:
           docker manifest push \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}
 
-          docker manifest create --amend \
+          docker manifest rm \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:latest \
+            || true
+
+          docker manifest create \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:latest \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64 \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64
@@ -252,7 +260,11 @@ jobs:
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
 
-          docker manifest create --amend \
+          docker manifest rm \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }} \
+            || true
+
+          docker manifest create \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }} \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64 \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64
@@ -260,7 +272,11 @@ jobs:
           docker manifest push \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}
 
-          docker manifest create --amend \
+          docker manifest rm \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:latest \
+            || true
+
+          docker manifest create \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:latest \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64 \
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64

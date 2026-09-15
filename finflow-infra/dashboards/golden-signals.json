@@ -82,7 +82,7 @@
         "y": 1
       },
       "id": 2,
-      "title": "Latencia p95 (95% usuarios)",
+      "title": "Latencia p95 (Peticiones Exitosas)",
       "type": "stat",
       "fieldConfig": {
         "defaults": {
@@ -118,8 +118,8 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(gin_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])) by (le)) or vector(0)",
-          "legendFormat": "p95",
+          "expr": "histogram_quantile(0.95, sum(rate(gin_request_duration_seconds_bucket{namespace=~\"$namespace\",code=~\"[23]..\"}[5m])) by (le)) or vector(0)",
+          "legendFormat": "p95 Exitosas",
           "range": true,
           "refId": "A"
         }
@@ -170,7 +170,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "((sum(rate(gin_requests_total{namespace=~\"$namespace\",status=~\"5..\"}[1m])) or vector(0)) / (sum(rate(gin_requests_total{namespace=~\"$namespace\"}[1m])) > 0 or vector(1))) * 100",
+          "expr": "((sum(rate(gin_requests_total{namespace=~\"$namespace\",code=~\"5..\"}[1m])) or vector(0)) / (sum(rate(gin_requests_total{namespace=~\"$namespace\"}[1m])) > 0 or vector(1))) * 100",
           "legendFormat": "Tasa Error %",
           "range": true,
           "refId": "A"
@@ -238,7 +238,7 @@
         "y": 5
       },
       "id": 5,
-      "title": "1. Tráfico: Peticiones / Seg por Status Code",
+      "title": "1. Tráfico: Peticiones / Seg por Código HTTP",
       "type": "timeseries",
       "fieldConfig": {
         "defaults": {
@@ -252,8 +252,8 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(gin_requests_total{namespace=~\"$namespace\"}[1m])) by (status)",
-          "legendFormat": "HTTP {{status}}",
+          "expr": "sum(rate(gin_requests_total{namespace=~\"$namespace\"}[1m])) by (code)",
+          "legendFormat": "HTTP {{code}}",
           "refId": "A"
         }
       ]
@@ -267,7 +267,7 @@
         "y": 5
       },
       "id": 6,
-      "title": "2. Latencia: Percentiles p50, p90, p95, p99",
+      "title": "2. Latencia: Percentiles p50, p90, p95, p99 (Exitosas)",
       "type": "timeseries",
       "fieldConfig": {
         "defaults": {
@@ -281,22 +281,22 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum(rate(gin_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(gin_request_duration_seconds_bucket{namespace=~\"$namespace\",code=~\"[23]..\"}[5m])) by (le))",
           "legendFormat": "p50 (Mediana)",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.90, sum(rate(gin_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.90, sum(rate(gin_request_duration_seconds_bucket{namespace=~\"$namespace\",code=~\"[23]..\"}[5m])) by (le))",
           "legendFormat": "p90",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(gin_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(gin_request_duration_seconds_bucket{namespace=~\"$namespace\",code=~\"[23]..\"}[5m])) by (le))",
           "legendFormat": "p95",
           "refId": "C"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(rate(gin_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(gin_request_duration_seconds_bucket{namespace=~\"$namespace\",code=~\"[23]..\"}[5m])) by (le))",
           "legendFormat": "p99",
           "refId": "D"
         }
@@ -311,7 +311,7 @@
         "y": 13
       },
       "id": 7,
-      "title": "3. Errores: Conteo de Errores por Endpoint y Status",
+      "title": "3. Errores: Conteo de Errores por Código y Endpoint",
       "type": "timeseries",
       "fieldConfig": {
         "defaults": {
@@ -324,8 +324,8 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(gin_requests_total{namespace=~\"$namespace\",status=~\"[45]..\"}[1m])) by (status, path)",
-          "legendFormat": "{{status}} - {{path}}",
+          "expr": "sum(rate(gin_requests_total{namespace=~\"$namespace\",code=~\"[45]..\"}[1m])) by (code, url)",
+          "legendFormat": "{{code}} - {{url}}",
           "refId": "A"
         }
       ]
@@ -436,5 +436,5 @@
   "timezone": "browser",
   "title": "FinFlow - 4 Golden Signals",
   "uid": "finflow-golden-signals",
-  "version": 1
+  "version": 2
 }

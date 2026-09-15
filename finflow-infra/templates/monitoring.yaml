@@ -152,10 +152,25 @@ spec:
           volumeMounts:
             - name: grafana-storage
               mountPath: /var/lib/grafana
+            - name: grafana-datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: grafana-dashboards-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana-dashboards
       volumes:
         - name: grafana-storage
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-grafana-pvc
+        - name: grafana-datasources
+          configMap:
+            name: {{ .Release.Name }}-grafana-datasources
+        - name: grafana-dashboards-provider
+          configMap:
+            name: {{ .Release.Name }}-grafana-dashboards-provider
+        - name: grafana-dashboards
+          configMap:
+            name: {{ .Release.Name }}-grafana-dashboard-golden-signals
 ---
 apiVersion: v1
 kind: Service

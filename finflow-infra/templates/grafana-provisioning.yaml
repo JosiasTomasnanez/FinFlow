@@ -1,0 +1,38 @@
+{{- if .Values.prometheus }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-grafana-datasources
+  labels:
+    app: {{ .Release.Name }}-grafana
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://{{ .Release.Name }}-prometheus-service:9090
+        isDefault: true
+        jsonData:
+          httpMethod: POST
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-grafana-dashboards-provider
+  labels:
+    app: {{ .Release.Name }}-grafana
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'FinFlow Dashboards'
+        orgId: 1
+        folder: 'FinFlow'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana-dashboards
+{{- end }}

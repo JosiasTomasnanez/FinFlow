@@ -57,6 +57,8 @@ data:
             regex: "8080"
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
 
       - job_name: 'keda-operator'
         kubernetes_sd_configs:
@@ -73,6 +75,8 @@ data:
             regex: "8080"
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
           - action: replace
             target_label: job
             replacement: keda-operator

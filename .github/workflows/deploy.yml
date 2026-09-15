@@ -26,6 +26,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Code validation bypass
         run: echo "Saltando validaciones locales. El build real se ejecutará en los contenedores de Docker."
 
@@ -33,10 +34,12 @@ jobs:
     name: Build & Push to Amazon ECR (Cloud)
     runs-on: ubuntu-latest
     needs: bypass-checks
+
     # --- DESACTIVADO TEMPORALMENTE ---
     # Se pone en 'false' para skipear la prueba en AWS mientras el clúster esté caído.
     # Cambiar a 'if: true' o eliminar esta línea cuando AWS vuelva a estar activo.
     if: false
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -88,21 +91,29 @@ jobs:
 
       - name: Login Helm to ECR
         run: |
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | helm registry login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
+            helm registry login \
+            --username AWS \
+            --password-stdin \
+            ${{ env.ECR_REGISTRY }}
 
       - name: Package and Push Helm Chart to ECR
         run: |
           helm package finflow-infra --destination finflow-chart/charts/
           helm dependency list finflow-chart
           helm package finflow-chart --version 1.0.${{ github.run_number }}
-          helm push finflow-chart-1.0.${{ github.run_number }}.tgz oci://${{ env.ECR_REGISTRY }}
+          helm push finflow-chart-1.0.${{ github.run_number }}.tgz \
+            oci://${{ env.ECR_REGISTRY }}
 
       - name: Update Staging AWS Tags with yq
         if: github.ref == 'refs/heads/main'
         run: |
           mkdir -p $HOME/.local/bin
-          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
+            -O $HOME/.local/bin/yq
+          chmod +x $HOME/.local/bin/yq
           export PATH="$HOME/.local/bin:$PATH"
+
           yq -i '.backend.image.tag = "${{ env.IMAGE_TAG }}"' values-staging-aws.yaml
           yq -i '.frontend.image.tag = "${{ env.IMAGE_TAG }}"' values-staging-aws.yaml
 
@@ -111,8 +122,13 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]"
+
           git add values-staging-aws.yaml
-          git commit -m "chore(gitops): update staging-aws image tags to ${{ env.IMAGE_TAG }} [skip ci]" || echo "No changes to commit"
+
+          git commit \
+            -m "chore(gitops): update staging-aws image tags to ${{ env.IMAGE_TAG }} [skip ci]" \
+            || echo "No changes to commit"
+
           git stash -u
           git pull --rebase -X theirs --autostash origin main
           git push origin HEAD:main
@@ -122,8 +138,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir -p $HOME/.local/bin
-          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
+            -O $HOME/.local/bin/yq
+          chmod +x $HOME/.local/bin/yq
           export PATH="$HOME/.local/bin:$PATH"
+
           yq -i '.backend.image.tag = "${{ env.IMAGE_TAG }}"' values-prod-aws.yaml
           yq -i '.frontend.image.tag = "${{ env.IMAGE_TAG }}"' values-prod-aws.yaml
 
@@ -132,8 +151,13 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]"
+
           git add values-prod-aws.yaml
-          git commit -m "chore(gitops): update prod-aws image tags to ${{ env.IMAGE_TAG }} [skip ci]" || echo "No changes to commit"
+
+          git commit \
+            -m "chore(gitops): update prod-aws image tags to ${{ env.IMAGE_TAG }} [skip ci]" \
+            || echo "No changes to commit"
+
           git stash -u
           git pull --rebase -X theirs --autostash origin main
           git push origin HEAD:main
@@ -145,6 +169,7 @@ jobs:
     needs: bypass-checks
     timeout-minutes: 15
     continue-on-error: true
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -162,31 +187,41 @@ jobs:
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ secrets.HARBOR_PASSWORD }}
 
-      # --- Backend: se compila cada arquitectura por separado y se pushea con el
-      #     Docker normal del runner (el que ya confía en Harbor), evitando el
-      #     contenedor aislado de Buildx que no comparte esa confianza. ---
+      # --- Backend: se compila cada arquitectura por separado y se pushea con
+      #     Docker normal del runner, que ya confía en Harbor. ---
       - name: Build Backend (amd64 + arm64) y cargar en Docker local
         run: |
           docker buildx build --platform linux/amd64 --load \
             -f ./Dockerfile \
             -t ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64 .
+
           docker buildx build --platform linux/arm64 --load \
             -f ./Dockerfile \
             -t ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64 .
 
       - name: Push imágenes por arquitectura (Backend)
         run: |
-          docker push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64
-          docker push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64
+          docker push \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64
 
+          docker push \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64
+
+      # --- IMPORTANTE:
+      #     Se elimina --amend para no reutilizar referencias antiguas
+      #     del manifest existente en Harbor. ---
       - name: Armar y pushear manifest multi-arch (Backend)
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
+
           for tag in ${{ env.IMAGE_TAG }} latest; do
-            docker manifest create --amend ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:$tag \
+            docker manifest create \
+              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:$tag \
               ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-amd64 \
               ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:${{ env.IMAGE_TAG }}-arm64
-            docker manifest push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:$tag
+
+            docker manifest push \
+              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-backend:$tag
           done
 
       # --- Frontend: mismo esquema ---
@@ -194,24 +229,36 @@ jobs:
         run: |
           docker buildx build --platform linux/amd64 --load \
             -f ./frontend/Dockerfile.dev \
-            -t ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64 ./frontend
+            -t ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64 \
+            ./frontend
+
           docker buildx build --platform linux/arm64 --load \
             -f ./frontend/Dockerfile.dev \
-            -t ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64 ./frontend
+            -t ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64 \
+            ./frontend
 
       - name: Push imágenes por arquitectura (Frontend)
         run: |
-          docker push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64
-          docker push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64
+          docker push \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64
 
+          docker push \
+            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64
+
+      # --- IMPORTANTE:
+      #     Se elimina --amend también en Frontend. ---
       - name: Armar y pushear manifest multi-arch (Frontend)
         run: |
           export DOCKER_CLI_EXPERIMENTAL=enabled
+
           for tag in ${{ env.IMAGE_TAG }} latest; do
-            docker manifest create --amend ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:$tag \
+            docker manifest create \
+              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:$tag \
               ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-amd64 \
               ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:${{ env.IMAGE_TAG }}-arm64
-            docker manifest push ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:$tag
+
+            docker manifest push \
+              ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/finflow-frontend:$tag
           done
 
       - name: Set up Helm
@@ -221,21 +268,30 @@ jobs:
 
       - name: Login Helm to Harbor
         run: |
-          echo "${{ secrets.HARBOR_PASSWORD }}" | helm registry login ${{ env.HARBOR_REGISTRY }} --username 'robot$github-actions' --password-stdin
+          echo "${{ secrets.HARBOR_PASSWORD }}" | \
+            helm registry login \
+            ${{ env.HARBOR_REGISTRY }} \
+            --username 'robot$github-actions' \
+            --password-stdin
 
       - name: Package and Push Helm Chart to Harbor
         run: |
           helm package finflow-infra --destination finflow-chart/charts/
           helm dependency list finflow-chart
           helm package finflow-chart --version 1.0.${{ github.run_number }}
-          helm push finflow-chart-1.0.${{ github.run_number }}.tgz oci://${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }} --insecure-skip-tls-verify
+          helm push finflow-chart-1.0.${{ github.run_number }}.tgz \
+            oci://${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }} \
+            --insecure-skip-tls-verify
 
       - name: Update Staging Local Tags with yq
         if: github.ref == 'refs/heads/main'
         run: |
           mkdir -p $HOME/.local/bin
-          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
+            -O $HOME/.local/bin/yq
+          chmod +x $HOME/.local/bin/yq
           export PATH="$HOME/.local/bin:$PATH"
+
           yq -i '.backend.image.tag = "${{ env.IMAGE_TAG }}"' values-staging.yaml
           yq -i '.frontend.image.tag = "${{ env.IMAGE_TAG }}"' values-staging.yaml
 
@@ -244,8 +300,13 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]"
+
           git add values-staging.yaml
-          git commit -m "chore(gitops): update staging (local/harbor) image tags to ${{ env.IMAGE_TAG }} [skip ci]" || echo "No changes to commit"
+
+          git commit \
+            -m "chore(gitops): update staging (local/harbor) image tags to ${{ env.IMAGE_TAG }} [skip ci]" \
+            || echo "No changes to commit"
+
           git stash -u
           git pull --rebase -X theirs --autostash origin main
           git push origin HEAD:main
@@ -255,8 +316,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir -p $HOME/.local/bin
-          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
+            -O $HOME/.local/bin/yq
+          chmod +x $HOME/.local/bin/yq
           export PATH="$HOME/.local/bin:$PATH"
+
           yq -i '.backend.image.tag = "${{ env.IMAGE_TAG }}"' values-prod.yaml
           yq -i '.frontend.image.tag = "${{ env.IMAGE_TAG }}"' values-prod.yaml
 
@@ -265,8 +329,13 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]"
+
           git add values-prod.yaml
-          git commit -m "chore(gitops): update prod (local/harbor) image tags to ${{ env.IMAGE_TAG }} [skip ci]" || echo "No changes to commit"
+
+          git commit \
+            -m "chore(gitops): update prod (local/harbor) image tags to ${{ env.IMAGE_TAG }} [skip ci]" \
+            || echo "No changes to commit"
+
           git stash -u
           git pull --rebase -X theirs --autostash origin main
           git push origin HEAD:main

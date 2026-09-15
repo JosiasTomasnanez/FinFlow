@@ -12,3 +12,5 @@ data:
   resource.customizations.ignoreDifferences.apps_Deployment: |
     jsonPointers:
     - /spec/replicas
+    - /spec/template/spec/volumes
+    - /spec/template/spec/containers/0/volumeMounts

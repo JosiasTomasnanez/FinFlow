@@ -43,14 +43,16 @@ spec:
             prometheus: null
           exporters:
             debug: null
-            loki:
-              endpoint: http://loki.finflow-infra.svc.cluster.local:3100/loki/api/v1/push
+            otlphttp/loki:
+              endpoint: http://loki.finflow-infra.svc.cluster.local:3100/otlp
+              tls:
+                insecure: true
           service:
             pipelines:
               traces: null
               metrics: null
               logs:
-                exporters: [loki]
+                exporters: [otlphttp/loki]
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: finflow-infra

@@ -54,7 +54,7 @@ spec:
             - name: UNLEASH_URL
               value: "{{ .Values.backend.unleashUrl }}"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "{{ .Values.backend.otelExporterOtlpEndpoint | default \"finflow-infra-jaeger.finflow-infra.svc.cluster.local:4317\" }}"
+              value: {{ .Values.backend.otelExporterOtlpEndpoint | default "finflow-infra-jaeger.finflow-infra.svc.cluster.local:4317" | quote }}
             - name: UNLEASH_APP_NAME
               valueFrom:
                 configMapKeyRef:

@@ -154,3 +154,4 @@ Una vez que todos los contenedores se estabilizan, Nginx expone de forma segura 
 | `http://localhost/unleash` | **Servidor Unleash** | Plano de Control y Gestión de Feature Flags |
 
 *Para apagar de forma segura todo el stack de la infraestructura local, simplemente ejecuta:* `docker-compose down`
+

@@ -57,6 +57,8 @@ data:
             regex: "8080"
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
 
       - job_name: 'keda-operator'
         kubernetes_sd_configs:
@@ -73,6 +75,8 @@ data:
             regex: "8080"
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
           - action: replace
             target_label: job
             replacement: keda-operator
@@ -152,10 +156,29 @@ spec:
           volumeMounts:
             - name: grafana-storage
               mountPath: /var/lib/grafana
+            - name: grafana-datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: grafana-dashboards-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana-dashboards
       volumes:
         - name: grafana-storage
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-grafana-pvc
+        - name: grafana-datasources
+          configMap:
+            name: {{ .Release.Name }}-grafana-datasources
+        - name: grafana-dashboards-provider
+          configMap:
+            name: {{ .Release.Name }}-grafana-dashboards-provider
+        - name: grafana-dashboards
+          projected:
+            sources:
+              - configMap:
+                  name: {{ .Release.Name }}-grafana-dashboard-golden-signals
+              - configMap:
+                  name: {{ .Release.Name }}-grafana-dashboard-loki
 ---
 apiVersion: v1
 kind: Service

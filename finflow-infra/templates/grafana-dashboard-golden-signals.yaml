@@ -1,0 +1,11 @@
+{{- if .Values.prometheus }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-grafana-dashboard-golden-signals
+  labels:
+    app: {{ .Release.Name }}-grafana
+data:
+  golden-signals.json: |-
+{{ .Files.Get "dashboards/golden-signals.json" | indent 4 }}
+{{- end }}

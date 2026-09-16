@@ -1,9 +1,10 @@
 package service
 
 import (
+	"context"
 	"errors"
-	"fmt" 
 
+	"github.com/josiastomasnanez/finflow/internal/logging"
 	"github.com/josiastomasnanez/finflow/internal/model"
 	"github.com/josiastomasnanez/finflow/internal/storage"
 )
@@ -15,8 +16,8 @@ var (
 )
 
 type WalletService struct {
-	store      storage.Store       
-	redisStore *storage.RedisStore 
+	store      storage.Store
+	redisStore *storage.RedisStore
 }
 
 func NewWalletService(store storage.Store, redisStore *storage.RedisStore) *WalletService {
@@ -26,7 +27,13 @@ func NewWalletService(store storage.Store, redisStore *storage.RedisStore) *Wall
 	}
 }
 
-func (s *WalletService) CreateWallet(owner string, initialBalance int64) (model.Wallet, error) {
+// Todos los métodos reciben ctx para poder loguear con el request_id que
+// viene del handler HTTP (ver internal/api/middleware.go), así los logs
+// de esta capa quedan correlacionados con los del handler que los llamó.
+
+func (s *WalletService) CreateWallet(ctx context.Context, owner string, initialBalance int64) (model.Wallet, error) {
+	log := logging.FromContext(ctx)
+
 	if owner == "" {
 		return model.Wallet{}, errors.New("owner is required")
 	}
@@ -46,24 +53,26 @@ func (s *WalletService) CreateWallet(owner string, initialBalance int64) (model.
 
 	if s.redisStore != nil {
 		if err := s.redisStore.SetWallet(savedWallet); err != nil {
-			fmt.Printf("[REDIS ERROR] No se pudo cachear la nueva wallet: %v\n", err)
+			log.Warn("redis_cache_write_failed", "wallet_id", savedWallet.ID, "error", err.Error())
 		} else {
-			fmt.Printf("[⚡ REDIS WRITE] Wallet %s cacheada al crearse\n", savedWallet.ID)
+			log.Info("redis_cache_write", "wallet_id", savedWallet.ID)
 		}
 	}
 
 	return savedWallet, nil
 }
 
-func (s *WalletService) GetWallet(id string) (model.Wallet, bool) {
+func (s *WalletService) GetWallet(ctx context.Context, id string) (model.Wallet, bool) {
+	log := logging.FromContext(ctx)
+
 	if s.redisStore != nil {
 		if wallet, found := s.redisStore.GetWallet(id); found {
-			fmt.Printf("🟢 [CACHE HIT] La wallet %s se obtuvo desde REDIS\n", id)
+			log.Info("redis_cache_hit", "wallet_id", id)
 			return wallet, true
 		}
 	}
 
-	fmt.Printf("🔴 [CACHE MISS] La wallet %s NO estaba en Redis. Buscando en POSTGRES...\n", id)
+	log.Info("redis_cache_miss", "wallet_id", id)
 	wallet, found := s.store.GetWallet(id)
 	if !found {
 		return model.Wallet{}, false
@@ -76,11 +85,13 @@ func (s *WalletService) GetWallet(id string) (model.Wallet, bool) {
 	return wallet, true
 }
 
-func (s *WalletService) ListWallets() []model.Wallet {
+func (s *WalletService) ListWallets(ctx context.Context) []model.Wallet {
 	return s.store.ListWallets()
 }
 
-func (s *WalletService) Transfer(fromID, toID string, amount int64) (model.PaymentResult, error) {
+func (s *WalletService) Transfer(ctx context.Context, fromID, toID string, amount int64) (model.PaymentResult, error) {
+	log := logging.FromContext(ctx)
+
 	if amount <= 0 {
 		return model.PaymentResult{}, errInvalidAmount
 	}
@@ -88,12 +99,12 @@ func (s *WalletService) Transfer(fromID, toID string, amount int64) (model.Payme
 		return model.PaymentResult{}, errors.New("sender and receiver must differ")
 	}
 
-	fromWallet, ok := s.GetWallet(fromID)
+	fromWallet, ok := s.GetWallet(ctx, fromID)
 	if !ok {
 		return model.PaymentResult{}, errWalletNotFound
 	}
 
-	toWallet, ok := s.GetWallet(toID)
+	toWallet, ok := s.GetWallet(ctx, toID)
 	if !ok {
 		return model.PaymentResult{}, errWalletNotFound
 	}
@@ -115,7 +126,7 @@ func (s *WalletService) Transfer(fromID, toID string, amount int64) (model.Payme
 	if s.redisStore != nil {
 		_ = s.redisStore.SetWallet(fromWallet)
 		_ = s.redisStore.SetWallet(toWallet)
-		fmt.Printf("[⚡ REDIS UPDATE] Saldos actualizados en caché post-transferencia\n")
+		log.Info("redis_cache_update_post_transfer", "from_wallet_id", fromID, "to_wallet_id", toID)
 	}
 
 	return model.PaymentResult{

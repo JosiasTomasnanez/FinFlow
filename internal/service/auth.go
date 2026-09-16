@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -22,7 +23,11 @@ func NewAuthService() *AuthService {
 	}
 }
 
-func (s *AuthService) Authenticate(username, password string) (string, error) {
+// ctx se recibe para mantener la misma firma que el resto de los métodos
+// de la capa service (todos correlacionables vía request_id) y por si en
+// el futuro este método necesita loguear o llamar a algo que dependa del
+// contexto (por ejemplo, autenticación contra un servicio externo).
+func (s *AuthService) Authenticate(ctx context.Context, username, password string) (string, error) {
 	if username == "" || password == "" {
 		return "", fmt.Errorf("username and password are required")
 	}

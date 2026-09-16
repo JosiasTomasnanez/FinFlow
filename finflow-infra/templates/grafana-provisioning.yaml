@@ -1,0 +1,58 @@
+{{- if .Values.prometheus }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-grafana-datasources
+  labels:
+    app: {{ .Release.Name }}-grafana
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://{{ .Release.Name }}-prometheus-service:9090
+        isDefault: true
+        jsonData:
+          httpMethod: POST
+
+      - name: Jaeger
+        type: jaeger
+        uid: jaeger
+        access: proxy
+        url: http://jaeger.finflow-infra.svc.cluster.local:16686
+        isDefault: false
+
+      - name: Loki
+        type: loki
+        uid: loki
+        access: proxy
+        url: http://loki.finflow-infra.svc.cluster.local:3100
+        isDefault: false
+        jsonData:
+          derivedFields:
+            - datasourceUid: jaeger
+              matcherRegex: '"trace_id":"([a-f0-9]+)"'
+              name: TraceID
+              url: '${__value.raw}'
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-grafana-dashboards-provider
+  labels:
+    app: {{ .Release.Name }}-grafana
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'FinFlow Dashboards'
+        orgId: 1
+        folder: 'FinFlow'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana-dashboards
+{{- end }}

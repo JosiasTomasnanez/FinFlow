@@ -1,4 +1,6 @@
-FROM node:20-alpine AS build
+# --- Etapa 1: Build de estáticos ---
+# Usamos $BUILDPLATFORM para que npm install y npm run build corran nativamente en x86
+FROM --platform=$BUILDPLATFORM node:20-alpine AS build
 
 WORKDIR /app
 
@@ -9,6 +11,8 @@ COPY . .
 
 RUN npm run build
 
+# --- Etapa 2: Servidor Nginx Final ---
+# Nginx se descargará según la arquitectura de destino (amd64 o arm64)
 FROM nginx:1.25-alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
@@ -25,4 +29,3 @@ RUN echo 'server { \
 EXPOSE 3000
 
 CMD ["nginx", "-g", "daemon off;"]
-

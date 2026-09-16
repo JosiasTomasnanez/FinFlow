@@ -52,6 +52,7 @@ spec:
               traces: null
               metrics: null
               logs:
+                receivers: []
                 exporters: [otlphttp/loki]
   destination:
     server: 'https://kubernetes.default.svc'

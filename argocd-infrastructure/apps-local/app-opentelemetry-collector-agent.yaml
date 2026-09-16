@@ -1,1 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: otelcol-agent
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://open-telemetry.github.io/opentelemetry-helm-charts'
+    chart: opentelemetry-collector
+    targetRevision: '0.173.1'
+    helm:
+      values: |
+        mode: daemonset
+        image:
+          repository: otel/opentelemetry-collector-contrib
 
+        presets:
+          logsCollection:
+            enabled: true
+
+        config:
+          receivers:
+            otlp: null
+            jaeger: null
+            zipkin: null
+            prometheus: null
+          exporters:
+            debug: null
+            loki:
+              endpoint: http://loki.finflow-infra.svc.cluster.local:3100/loki/api/v1/push
+          service:
+            pipelines:
+              traces: null
+              metrics: null
+              logs:
+                exporters: [loki]
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: finflow-infra
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

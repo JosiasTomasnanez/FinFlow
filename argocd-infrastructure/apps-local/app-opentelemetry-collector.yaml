@@ -1,23 +1,29 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: opentelemetry-collector
+  name: otelcol-gateway
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: 'https://open-telemetry.github.io/opentelemetry-helm-charts'
     chart: opentelemetry-collector
-    targetRevision: 0.172.1
+    targetRevision: '0.173.1'
     helm:
       values: |
+        mode: deployment
         image:
-          repository: "otel/opentelemetry-collector-contrib"
-        mode: daemonset
+          repository: otel/opentelemetry-collector-contrib
+
         config:
+          receivers:
+            jaeger: null
+            zipkin: null
+            prometheus: null
           exporters:
+            debug: null
             otlp/jaeger:
-              endpoint: "jaeger.opentelemetry.svc.cluster.local:4317"
+              endpoint: jaeger.finflow-infra.svc.cluster.local:4317
               tls:
                 insecure: true
           service:
@@ -25,10 +31,12 @@ spec:
               traces:
                 receivers: [otlp]
                 processors: [batch]
-                exporters: [debug, otlp/jaeger]
+                exporters: [otlp/jaeger]
+              metrics: null
+              logs: null
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: opentelemetry
+    namespace: finflow-infra
   syncPolicy:
     automated:
       prune: true

@@ -1,0 +1,11 @@
+{{- if .Values.prometheus }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-grafana-dashboard-loki
+  labels:
+    app: {{ .Release.Name }}-grafana
+data:
+  loki-logs.json: |-
+{{ .Files.Get "dashboards/loki-logs.json" | indent 4 }}
+{{- end }}

@@ -173,8 +173,12 @@ spec:
           configMap:
             name: {{ .Release.Name }}-grafana-dashboards-provider
         - name: grafana-dashboards
-          configMap:
-            name: {{ .Release.Name }}-grafana-dashboard-golden-signals
+          projected:
+            sources:
+              - configMap:
+                  name: {{ .Release.Name }}-grafana-dashboard-golden-signals
+              - configMap:
+                  name: {{ .Release.Name }}-grafana-dashboard-loki
 ---
 apiVersion: v1
 kind: Service

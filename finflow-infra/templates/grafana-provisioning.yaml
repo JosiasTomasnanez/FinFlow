@@ -17,6 +17,13 @@ data:
         jsonData:
           httpMethod: POST
 
+      - name: Jaeger
+        type: jaeger
+        uid: jaeger
+        access: proxy
+        url: http://jaeger.finflow-infra.svc.cluster.local:16686
+        isDefault: false
+
       - name: Loki
         type: loki
         uid: loki
@@ -29,13 +36,6 @@ data:
               matcherRegex: '"trace_id":"([a-f0-9]+)"'
               name: TraceID
               url: '${__value.raw}'
-
-      - name: Jaeger
-        type: jaeger
-        uid: jaeger
-        access: proxy
-        url: http://jaeger.finflow-infra.svc.cluster.local:16686
-        isDefault: false
 ---
 apiVersion: v1
 kind: ConfigMap

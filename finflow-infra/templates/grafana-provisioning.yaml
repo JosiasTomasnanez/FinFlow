@@ -19,8 +19,22 @@ data:
 
       - name: Loki
         type: loki
+        uid: loki
         access: proxy
         url: http://loki.finflow-infra.svc.cluster.local:3100
+        isDefault: false
+        jsonData:
+          derivedFields:
+            - datasourceUid: jaeger
+              matcherRegex: '"trace_id":"([a-f0-9]+)"'
+              name: TraceID
+              url: '$${__value.raw}'
+
+      - name: Jaeger
+        type: jaeger
+        uid: jaeger
+        access: proxy
+        url: http://jaeger.finflow-infra.svc.cluster.local:16686
         isDefault: false
 ---
 apiVersion: v1

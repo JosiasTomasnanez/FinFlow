@@ -8,12 +8,19 @@
 // el mismo request_id. También se devuelve en la respuesta HTTP para que
 // otros servicios (por ejemplo el frontend) puedan loguear el mismo id y
 // así correlacionar logs entre servicios distintos.
+//
+// Además, si el request corre dentro de un span de OpenTelemetry (lo
+// envuelve otelhttp.NewHandler en server.go), el trace_id de ese span se
+// agrega también como campo del logger, para poder saltar de un log en
+// Loki al trace correspondiente en Jaeger (y viceversa) desde Grafana.
 package logging
 
 import (
 	"context"
 	"log/slog"
 	"os"
+
+	"go.opentelemetry.io/otel/trace"
 )
 
 type ctxKey string
@@ -42,11 +49,18 @@ func Base() *slog.Logger {
 }
 
 // WithRequestID devuelve una copia de ctx que lleva el requestID y un
-// logger que ya tiene el campo request_id seteado, para que todos los
-// logs posteriores lo incluyan automáticamente.
+// logger que ya tiene el campo request_id seteado (y trace_id, si hay un
+// span activo en ctx), para que todos los logs posteriores lo incluyan
+// automáticamente.
 func WithRequestID(ctx context.Context, requestID string) context.Context {
 	ctx = context.WithValue(ctx, requestIDKey, requestID)
+
 	logger := base.With(slog.String("request_id", requestID))
+
+	if span := trace.SpanFromContext(ctx); span.SpanContext().IsValid() {
+		logger = logger.With(slog.String("trace_id", span.SpanContext().TraceID().String()))
+	}
+
 	ctx = context.WithValue(ctx, loggerKey, logger)
 	return ctx
 }

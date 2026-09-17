@@ -1,6 +1,6 @@
 services:
 
-  #  PROXY INVERSO
+  #  PROXY INVERSO 
   nginx-proxy:
     image: nginx:alpine
     ports:

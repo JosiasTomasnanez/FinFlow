@@ -16,8 +16,8 @@ secrets/*.env
 iam_policy.json
 master-sealed-secret-key.yaml
 .env
-*.tgz
 finflow-chart/charts/
+
 
 # Node
 node_modules/

@@ -12,12 +12,19 @@ backend:
   databaseHost: "finflow-prod-postgres-service"
   databasePort: "5432"
   redisUrl: "redis://finflow-prod-redis-service:6339/0"
-  unleashUrl: "http://cluster.local"
-  otelExporterOtlpEndpoint: "finflow-infra-jaeger.finflow-infra.svc.cluster.local:4317"
+  unleashUrl: "http://unleash-web.finflow-infra.svc.cluster.local:4242/api"
+  otelExporterOtlpEndpoint: "otelcol-gateway-opentelemetry-collector.finflow-infra.svc.cluster.local:4317"
   argoStrategy:
     steps:
       - setWeight: 33
       - pause: {}
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
   autoscaling:
     minReplicas: 1
     maxReplicas: 10

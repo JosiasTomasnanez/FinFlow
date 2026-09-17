@@ -42,6 +42,9 @@ func authLoginHandler(authService *service.AuthService) gin.HandlerFunc {
 func flagStatusHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		enabled := unleash.IsEnabled("login-feature-flag")
-		c.JSON(http.StatusOK, gin.H{"feature_login": enabled})
+		c.JSON(http.StatusOK, gin.H{
+			"feature_login": enabled,
+			"feature_lab":   true,
+		})
 	}
 }

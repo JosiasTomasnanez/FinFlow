@@ -88,7 +88,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate({k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | status >= 500 [1m])) or vector(0)",
+          "expr": "sum(rate({k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-.*-app.*\"} | json | msg=\"http_request\" | status >= 500 [1m])) or vector(0)",
           "legendFormat": "Errores 5xx",
           "refId": "A"
         }
@@ -129,7 +129,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (pod) (quantile_over_time(0.95, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
+          "expr": "sum by (pod) (quantile_over_time(0.95, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-.*-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
           "legendFormat": "p95",
           "refId": "A"
         }
@@ -152,7 +152,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (status) (count_over_time({k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" [1m]))",
+          "expr": "sum by (status) (count_over_time({k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-.*-app.*\"} | json | msg=\"http_request\" [1m]))",
           "legendFormat": "HTTP {{status}}",
           "refId": "A"
         }
@@ -176,22 +176,22 @@
       },
       "targets": [
         {
-          "expr": "sum by (pod) (quantile_over_time(0.50, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
+          "expr": "sum by (pod) (quantile_over_time(0.50, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-.*-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
           "legendFormat": "p50 (Mediana)",
           "refId": "A"
         },
         {
-          "expr": "sum by (pod) (quantile_over_time(0.90, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
+          "expr": "sum by (pod) (quantile_over_time(0.90, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-.*-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
           "legendFormat": "p90",
           "refId": "B"
         },
         {
-          "expr": "sum by (pod) (quantile_over_time(0.95, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
+          "expr": "sum by (pod) (quantile_over_time(0.95, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-.*-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
           "legendFormat": "p95",
           "refId": "C"
         },
         {
-          "expr": "sum by (pod) (quantile_over_time(0.99, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
+          "expr": "sum by (pod) (quantile_over_time(0.99, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-.*-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
           "legendFormat": "p99",
           "refId": "D"
         }
@@ -216,7 +216,7 @@
         "definition": "label_values(k8s_namespace_name)",
         "hide": 0,
         "includeAll": true,
-        "allValue": ".+",
+        "allValue": "finflow-prod|finflow-staging",
         "label": "Namespace",
         "multi": false,
         "name": "namespace",
@@ -226,7 +226,7 @@
           "refId": "LokiVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
-        "regex": "",
+        "regex": "/^(finflow-prod|finflow-staging)$/",
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"
@@ -241,5 +241,5 @@
   "timezone": "browser",
   "title": "FinFlow - Logs (Loki)",
   "uid": "finflow-loki-logs",
-  "version": 5
+  "version": 6
 }

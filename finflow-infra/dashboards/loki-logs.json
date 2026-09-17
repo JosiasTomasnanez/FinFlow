@@ -216,6 +216,7 @@
         "definition": "label_values(k8s_namespace_name)",
         "hide": 0,
         "includeAll": true,
+        "allValue": ".+",
         "label": "Namespace",
         "multi": false,
         "name": "namespace",
@@ -240,5 +241,5 @@
   "timezone": "browser",
   "title": "FinFlow - Logs (Loki)",
   "uid": "finflow-loki-logs",
-  "version": 3
+  "version": 4
 }

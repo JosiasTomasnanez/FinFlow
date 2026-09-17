@@ -47,7 +47,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate({k8s_namespace_name=~\"$namespace\", service_name=\"finflow-app\"}[1m]))",
+          "expr": "sum(rate({k8s_namespace_name=~\"$namespace\", k8s_container_name=\"finflow-app\"}[1m]))",
           "legendFormat": "Líneas/seg",
           "refId": "A"
         }
@@ -88,7 +88,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate({k8s_namespace_name=~\"$namespace\", service_name=\"finflow-app\"} | json | status >= 500 [1m])) or vector(0)",
+          "expr": "sum(rate({k8s_namespace_name=~\"$namespace\", k8s_container_name=\"finflow-app\"} | json | status >= 500 [1m])) or vector(0)",
           "legendFormat": "Errores 5xx",
           "refId": "A"
         }
@@ -129,7 +129,7 @@
       },
       "targets": [
         {
-          "expr": "quantile_over_time(0.95, {k8s_namespace_name=~\"$namespace\", service_name=\"finflow-app\"} | json | unwrap latency_ms [5m])",
+          "expr": "quantile_over_time(0.95, {k8s_namespace_name=~\"$namespace\", k8s_container_name=\"finflow-app\"} | json | unwrap latency_ms [5m])",
           "legendFormat": "p95",
           "refId": "A"
         }
@@ -152,7 +152,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (status) (count_over_time({k8s_namespace_name=~\"$namespace\", service_name=\"finflow-app\"} | json [1m]))",
+          "expr": "sum by (status) (count_over_time({k8s_namespace_name=~\"$namespace\", k8s_container_name=\"finflow-app\"} | json [1m]))",
           "legendFormat": "HTTP {{status}}",
           "refId": "A"
         }
@@ -176,4 +176,69 @@
       },
       "targets": [
         {
-          "expr": "quantile_over_time(0.50, {k8s_namespace_name=~\"$namespace\", service_name=\"finflow-app\"} | json | unwrap latency_ms
+          "expr": "quantile_over_time(0.50, {k8s_namespace_name=~\"$namespace\", k8s_container_name=\"finflow-app\"} | json | unwrap latency_ms [5m])",
+          "legendFormat": "p50 (Mediana)",
+          "refId": "A"
+        },
+        {
+          "expr": "quantile_over_time(0.90, {k8s_namespace_name=~\"$namespace\", k8s_container_name=\"finflow-app\"} | json | unwrap latency_ms [5m])",
+          "legendFormat": "p90",
+          "refId": "B"
+        },
+        {
+          "expr": "quantile_over_time(0.95, {k8s_namespace_name=~\"$namespace\", k8s_container_name=\"finflow-app\"} | json | unwrap latency_ms [5m])",
+          "legendFormat": "p95",
+          "refId": "C"
+        },
+        {
+          "expr": "quantile_over_time(0.99, {k8s_namespace_name=~\"$namespace\", k8s_container_name=\"finflow-app\"} | json | unwrap latency_ms [5m])",
+          "legendFormat": "p99",
+          "refId": "D"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["finflow", "observabilidad", "loki", "logs"],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "finflow-prod",
+          "value": "finflow-prod"
+        },
+        "datasource": {
+          "type": "loki",
+          "uid": "loki"
+        },
+        "definition": "label_values(k8s_namespace_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Namespace",
+        "multi": false,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(k8s_namespace_name)",
+          "refId": "LokiVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "FinFlow - Logs (Loki)",
+  "uid": "finflow-loki-logs",
+  "version": 1
+}

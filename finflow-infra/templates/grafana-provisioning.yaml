@@ -31,7 +31,7 @@ data:
             filterByTraceID: false
             filterBySpanID: false
             customQuery: true
-            query: '{service="finflow-backend"} | json | trace_id="${__trace.traceId}"'
+            query: '{k8s_container_name="finflow-app"} | json | trace_id="$${__trace.traceId}"'
 
       - name: Loki
         type: loki
@@ -44,7 +44,7 @@ data:
             - datasourceUid: jaeger
               matcherRegex: '"trace_id":"([a-f0-9]+)"'
               name: TraceID
-              url: '${__value.raw}'
+              url: '$${__value.raw}'
 ---
 apiVersion: v1
 kind: ConfigMap

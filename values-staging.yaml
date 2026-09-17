@@ -6,12 +6,12 @@ backend:
   port: 8080
   image:
     repository: harbor.finflow.local/finflow/finflow-backend
-    tag: 686adc5e670f8eb8a81dfcd618978a60930d45f7
+    tag: 0e8584a2f95c970f37eb461ff797f65c209534b8
   databaseHost: "finflow-staging-postgres-service"
   databasePort: "5432"
   redisUrl: "redis://finflow-staging-redis-service:6339/0"
   unleashUrl: "http://unleash-web.finflow-infra.svc.cluster.local:4242/api"
-  otelExporterOtlpEndpoint: "finflow-infra-jaeger.finflow-infra.svc.cluster.local:4317"
+  otelExporterOtlpEndpoint: "otelcol-gateway-opentelemetry-collector.finflow-infra.svc.cluster.local:4317"
   argoStrategy:
     steps:
       - setWeight: 33
@@ -35,8 +35,8 @@ frontend:
   replicas: 1
   image:
     repository: harbor.finflow.local/finflow/finflow-frontend
-    tag: 686adc5e670f8eb8a81dfcd618978a60930d45f7
-  apiUrl: "http://staging.finflow.local"
+    tag: 0e8584a2f95c970f37eb461ff797f65c209534b8
+  apiUrl: "http://staging.finflow.local/api"
   argoStrategy:
     steps:
       - setWeight: 33

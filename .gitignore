@@ -18,6 +18,7 @@ master-sealed-secret-key.yaml
 .env
 finflow-chart/charts/
 
+
 # Node
 node_modules/
 frontend/node_modules/

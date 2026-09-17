@@ -1,12 +1,13 @@
 package api
 
 import (
-	"net/http"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/josiastomasnanez/finflow/internal/lab"
 	"github.com/josiastomasnanez/finflow/internal/service"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"net/http"
 )
 
 func NewServer(walletService *service.WalletService, authService *service.AuthService) *http.Server {
@@ -33,6 +34,7 @@ func NewServer(walletService *service.WalletService, authService *service.AuthSe
 	apiGroup.POST("/payments", paymentHandler(walletService))
 	apiGroup.POST("/login", authLoginHandler(authService))
 	apiGroup.GET("/flags", flagStatusHandler())
+	registerLabRoutes(apiGroup, &lab.Hold{})
 
 	router.Static("/assets", "./frontend/dist/assets")
 	router.StaticFile("/", "./frontend/dist/index.html")

@@ -23,6 +23,15 @@ data:
         access: proxy
         url: http://jaeger.finflow-infra.svc.cluster.local:16686
         isDefault: false
+        jsonData:
+          tracesToLogsV2:
+            datasourceUid: loki
+            spanStartTimeShift: '-5m'
+            spanEndTimeShift: '5m'
+            filterByTraceID: false
+            filterBySpanID: false
+            customQuery: true
+            query: '{service="finflow-backend"} | json | trace_id="${__trace.traceId}"'
 
       - name: Loki
         type: loki

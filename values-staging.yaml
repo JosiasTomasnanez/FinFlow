@@ -16,6 +16,13 @@ backend:
     steps:
       - setWeight: 33
       - pause: {}
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
   autoscaling:
     minReplicas: 1
     maxReplicas: 3

@@ -25,7 +25,7 @@
       "collapsed": false,
       "gridPos": {
         "h": 4,
-        "w": 6,
+        "w": 4,
         "x": 0,
         "y": 1
       },
@@ -77,8 +77,8 @@
       "collapsed": false,
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 6,
+        "w": 5,
+        "x": 4,
         "y": 1
       },
       "id": 2,
@@ -129,8 +129,8 @@
       "collapsed": false,
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 12,
+        "w": 5,
+        "x": 9,
         "y": 1
       },
       "id": 3,
@@ -181,28 +181,30 @@
       "collapsed": false,
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 18,
+        "w": 5,
+        "x": 14,
         "y": 1
       },
       "id": 4,
-      "title": "Memoria Heap Asignada (Saturación)",
+      "title": "CPU uso / límite",
       "type": "stat",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "mappings": [],
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               { "color": "green", "value": null },
-              { "color": "yellow", "value": 104857600 },
-              { "color": "red", "value": 268435456 }
+              { "color": "yellow", "value": 0.7 },
+              { "color": "red", "value": 0.9 }
             ]
           },
-          "unit": "bytes"
+          "unit": "percentunit"
         },
         "overrides": []
       },
@@ -222,8 +224,62 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(go_memstats_alloc_bytes{namespace=~\"$namespace\"})",
-          "legendFormat": "Memoria Heap",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container=\"finflow-app\"}[2m])) / sum(container_spec_cpu_quota{namespace=~\"$namespace\",container=\"finflow-app\"} / container_spec_cpu_period{namespace=~\"$namespace\",container=\"finflow-app\"})",
+          "legendFormat": "CPU / limit",
+          "range": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 19,
+        "y": 1
+      },
+      "id": 11,
+      "title": "Memoria working set / límite",
+      "type": "stat",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.7 },
+              { "color": "red", "value": 0.9 }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(container_memory_working_set_bytes{namespace=~\"$namespace\",container=\"finflow-app\"}) / sum(container_spec_memory_limit_bytes{namespace=~\"$namespace\",container=\"finflow-app\"})",
+          "legendFormat": "Mem / limit",
           "range": true,
           "refId": "A"
         }
@@ -306,7 +362,7 @@
       "collapsed": false,
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 24,
         "x": 0,
         "y": 13
       },
@@ -334,65 +390,116 @@
       "collapsed": false,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 13
+        "w": 8,
+        "x": 0,
+        "y": 21
       },
       "id": 8,
-      "title": "4. Saturación: Goroutines Activas y Asignación de Memoria",
+      "title": "4. Saturación: CPU uso / límite",
       "type": "timeseries",
       "fieldConfig": {
         "defaults": {
           "custom": {
             "drawStyle": "line",
-            "lineInterpolation": "smooth"
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": ".*Memoria.*"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "bytes"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              }
+            "lineInterpolation": "smooth",
+            "fillOpacity": 15
+          },
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.7 },
+              { "color": "red", "value": 0.9 }
             ]
           },
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": ".*Goroutines.*"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "short"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "left"
-              }
-            ]
-          }
-        ]
+          "unit": "percentunit"
+        }
       },
       "targets": [
         {
-          "expr": "sum(go_goroutines{namespace=~\"$namespace\"}) by (pod)",
-          "legendFormat": "{{pod}} - Goroutines",
+          "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\",container=\"finflow-app\"}[2m])) / sum by (pod) (container_spec_cpu_quota{namespace=~\"$namespace\",container=\"finflow-app\"} / container_spec_cpu_period{namespace=~\"$namespace\",container=\"finflow-app\"})",
+          "legendFormat": "{{pod}}",
           "refId": "A"
-        },
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 21
+      },
+      "id": 9,
+      "title": "4. Saturación: Memoria working set / límite",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 15
+          },
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.7 },
+              { "color": "red", "value": 0.9 }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "targets": [
         {
-          "expr": "sum(go_memstats_alloc_bytes{namespace=~\"$namespace\"}) by (pod)",
-          "legendFormat": "{{pod}} - Memoria",
-          "refId": "B"
+          "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=~\"$namespace\",container=\"finflow-app\"}) / sum by (pod) (container_spec_memory_limit_bytes{namespace=~\"$namespace\",container=\"finflow-app\"})",
+          "legendFormat": "{{pod}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 21
+      },
+      "id": 10,
+      "title": "4. Saturación: Throttle CFS",
+      "type": "timeseries",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 15
+          },
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.01 },
+              { "color": "red", "value": 0.2 }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (pod) (rate(container_cpu_cfs_throttled_periods_total{namespace=~\"$namespace\",container=\"finflow-app\"}[2m])) / sum by (pod) (rate(container_cpu_cfs_periods_total{namespace=~\"$namespace\",container=\"finflow-app\"}[2m]))",
+          "legendFormat": "{{pod}}",
+          "refId": "A"
         }
       ]
     }
@@ -436,5 +543,5 @@
   "timezone": "browser",
   "title": "FinFlow - 4 Golden Signals",
   "uid": "finflow-golden-signals",
-  "version": 2
+  "version": 3
 }

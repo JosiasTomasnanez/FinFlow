@@ -10,8 +10,17 @@ metadata:
   name: {{ .Release.Name }}-prometheus-cluster-role
 rules:
   - apiGroups: [""]
-    resources: ["endpoints", "pods", "services"]
+    resources:
+      - nodes
+      - nodes/metrics
+      - nodes/proxy
+      - nodes/stats
+      - pods
+      - services
+      - endpoints
     verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -80,6 +89,18 @@ data:
           - action: replace
             target_label: job
             replacement: keda-operator
+
+      - job_name: 'kubelet-cadvisor'
+        scheme: https
+        metrics_path: /metrics/cadvisor
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        tls_config:
+          insecure_skip_verify: true
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
 ---
 apiVersion: apps/v1
 kind: Deployment

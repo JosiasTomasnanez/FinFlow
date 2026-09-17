@@ -38,7 +38,7 @@ frontend:
   image:
     repository: harbor.finflow.local/finflow/finflow-frontend
     tag: aaa4a558312aae94a8b6b47d82220cc5ef9a47d9
-  apiUrl: "http://prod.finflow.local/api"
+  apiUrl: "http://prod.finflow.local"
   argoStrategy:
     steps:
       - setWeight: 33

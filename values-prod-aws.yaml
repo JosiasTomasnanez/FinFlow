@@ -47,7 +47,7 @@ frontend:
   image:
     repository: 199667819856.dkr.ecr.us-east-1.amazonaws.com/finflow-frontend
     tag: latest
-  apiUrl: "/api"
+  apiUrl: ""
   argoStrategy:
     steps:
       - setWeight: 33

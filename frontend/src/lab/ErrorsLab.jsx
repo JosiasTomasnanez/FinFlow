@@ -1,36 +1,38 @@
-import { useState } from 'react'
-import Button from '@mui/material/Button'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import { apiRequest, jsonPost } from '../api'
-import { runParallel } from './runParallel'
-import LabStation from './LabStation'
+import { useState } from 'react';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import { apiRequest, jsonPost } from '../api';
+import { runParallel } from './runParallel';
+import LabStation from './LabStation';
+import { logEvent } from '../Logger';
 
 export default function ErrorsLab() {
-  const [count, setCount] = useState(10)
-  const [busy, setBusy] = useState(false)
-  const [log, setLog] = useState('')
-  const [error, setError] = useState(false)
+  const [count, setCount] = useState(10);
+  const [busy, setBusy] = useState(false);
+  const [log, setLog] = useState('');
+  const [error, setError] = useState(false);
 
   const fire = async () => {
-    setBusy(true)
-    setError(false)
-    setLog('Inyectando 500...')
+    setBusy(true);
+    setError(false);
+    setLog('Inyectando 500...');
     try {
       const { ok, total } = await runParallel(count, async () => {
-        const r = await apiRequest('/api/lab/error', jsonPost({ code: 500 }))
-        if (r.status < 500) {
-          throw new Error(`status ${r.status}`)
+        const { response } = await apiRequest('/api/lab/error', jsonPost({ code: 500 }));
+        if (response.status < 500) {
+          logEvent('ERROR', errorMessage, { status: response.status });
+          throw new Error(`status ${response.status}`);
         }
-      })
-      setLog(`${ok}/${total} HTTP 5xx`)
+      });
+      setLog(`${ok}/${total} HTTP 5xx`);
     } catch (err) {
-      setError(true)
-      setLog(err.message)
+      setError(true);
+      setLog(err.message);
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
-  }
+  };
 
   return (
     <LabStation
@@ -53,5 +55,5 @@ export default function ErrorsLab() {
         </Button>
       </Stack>
     </LabStation>
-  )
+  );
 }

@@ -1,12 +1,12 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
-import AppShell from './layout/AppShell'
-import HomePage from './pages/HomePage'
-import LabLayout from './lab/LabLayout'
-import LabHome from './lab/LabHome'
-import TrafficLab from './lab/TrafficLab'
-import LatencyLab from './lab/LatencyLab'
-import ErrorsLab from './lab/ErrorsLab'
-import SaturationLab from './lab/SaturationLab'
+import { Navigate, Route, Routes } from 'react-router-dom';
+import AppShell from './layout/AppShell';
+import HomePage from './pages/HomePage';
+import LabLayout from './lab/LabLayout';
+import LabHome from './lab/LabHome';
+import TrafficLab from './lab/TrafficLab';
+import LatencyLab from './lab/LatencyLab';
+import ErrorsLab from './lab/ErrorsLab';
+import SaturationLab from './lab/SaturationLab';
 
 export default function App() {
   return (
@@ -23,5 +23,5 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
-  )
+  );
 }

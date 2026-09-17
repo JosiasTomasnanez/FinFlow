@@ -20,6 +20,21 @@ spec:
     - http:
     {{- end }}
         paths:
+          # --- RUTAS DINÁMICAS (NUEVO) ---
+          # Esto itera sobre las rutas de OpenTelemetry que pusimos en el values.yaml
+          {{- if .Values.ingress.paths }}
+          {{- range .Values.ingress.paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ .backendService }}
+                port:
+                  number: {{ .backendPort }}
+          {{- end }}
+          {{- end }}
+          
+          # --- RUTAS POR DEFECTO (TUS RUTAS ORIGINALES) ---
           - path: /api
             pathType: Prefix
             backend:

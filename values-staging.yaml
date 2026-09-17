@@ -37,6 +37,7 @@ frontend:
     repository: harbor.finflow.local/finflow/finflow-frontend
     tag: 66124df5b1ebd8788ee859bebf5bec45db6448b1
   apiUrl: "http://staging.finflow.local/api"
+  otelUrl: "http://staging.finflow.local"
   argoStrategy:
     steps:
       - setWeight: 33
@@ -45,3 +46,12 @@ ingress:
   enabled: true
   className: "traefik"
   host: "staging.finflow.local"
+  paths:
+  - path: /v1/traces
+    pathType: Exact
+    backendService: "otelcol-gateway-opentelemetry-collector"
+    backendPort: 4318
+  - path: /v1/logs
+    pathType: Exact
+    backendService: "otelcol-gateway-opentelemetry-collector"
+    backendPort: 4318

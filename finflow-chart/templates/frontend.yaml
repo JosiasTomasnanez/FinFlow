@@ -28,6 +28,8 @@ spec:
               value: "3000"
             - name: VITE_API_URL
               value: "{{ .Values.frontend.apiUrl }}"
+            - name: VITE_OTEL_COLLECTOR_URL
+              value: "{{ .Values.frontend.otelUrl }}"
 ---
 apiVersion: v1
 kind: Service

@@ -1,36 +1,36 @@
-import { useState } from 'react'
-import Alert from '@mui/material/Alert'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
-import { apiFetch, jsonPost } from './api'
+import { useState } from 'react';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { apiFetch, jsonPost } from './api';
 
 export default function Login({ onLogin, featureEnabled }) {
-  const [username, setUsername] = useState('admin')
-  const [password, setPassword] = useState('password')
-  const [message, setMessage] = useState('')
-  const [error, setError] = useState(false)
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('password');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState(false);
 
   const handleLogin = async (event) => {
-    event.preventDefault()
-    setError(false)
-    setMessage('Iniciando sesión...')
+    event.preventDefault();
+    setError(false);
+    setMessage('Iniciando sesión...');
     try {
-      const result = await apiFetch('/api/login', jsonPost({ username, password }))
-      setMessage(`Bienvenido ${result.username}`)
-      onLogin(result)
+      const result = await apiFetch('/api/login', jsonPost({ username, password }));
+      setMessage(`Bienvenido ${result.username}`);
+      onLogin(result);
     } catch (err) {
-      setError(true)
-      setMessage(err.message)
+      setError(true);
+      setMessage(err.message);
     }
-  }
+  };
 
   if (!featureEnabled) {
-    return null
+    return null;
   }
 
   return (
@@ -61,5 +61,5 @@ export default function Login({ onLogin, featureEnabled }) {
         ) : null}
       </CardContent>
     </Card>
-  )
+  );
 }

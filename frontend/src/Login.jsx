@@ -1,38 +1,46 @@
-import { useState } from 'react'
+import { useState } from 'react';
+import { logEvent } from './Logger';
+
+const BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const apiFetch = async (path, options = {}) => {
-  const response = await fetch(path, options)
-  const data = await response.json().catch(() => null)
+  const response = await fetch(`${BASE_URL}${path}`, options);
+  const data = await response.json().catch(() => null);
+
   if (!response.ok) {
-    throw new Error(data?.error || response.statusText)
+    const errorMessage = `Login error: ${data?.error || response.statusText}`;
+    logEvent('ERROR', errorMessage, { status: response.status });
+    throw new Error(errorMessage);
   }
-  return data
-}
+
+  logEvent('INFO', 'Login OK', { status: response.status });
+  return data;
+};
 
 function Login({ onLogin, featureEnabled }) {
-  const [username, setUsername] = useState('admin')
-  const [password, setPassword] = useState('password')
-  const [message, setMessage] = useState('')
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('password');
+  const [message, setMessage] = useState('');
 
   const handleLogin = async (event) => {
-    event.preventDefault()
-    setMessage('Iniciando sesión...')
+    event.preventDefault();
+    setMessage('Iniciando sesión...');
 
     try {
       const result = await apiFetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
-      })
-      setMessage(`Bienvenido ${result.username}`)
-      onLogin(result)
+      });
+      setMessage(`Bienvenido ${result.username}`);
+      onLogin(result);
     } catch (error) {
-      setMessage(`Error: ${error.message}`)
+      setMessage(`Error: ${error.message}`);
     }
-  }
+  };
 
   if (!featureEnabled) {
-    return null
+    return null;
   }
 
   return (
@@ -51,7 +59,7 @@ function Login({ onLogin, featureEnabled }) {
       </form>
       <pre>{message}</pre>
     </section>
-  )
+  );
 }
 
-export default Login
+export default Login;

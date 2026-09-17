@@ -20,10 +20,23 @@ spec:
             jaeger: null
             zipkin: null
             prometheus: null
+            otlp:
+              protocols:
+                http:
+                  endpoint: 0.0.0.0:4318
+                  cors:
+                    allowed_origins:
+                      - "http://prod.finflow.local"
+                      - "http://staging.finflow.local"
+                grpc: null
           exporters:
             debug: null
             otlp/jaeger:
               endpoint: jaeger.finflow-infra.svc.cluster.local:4317
+              tls:
+                insecure: true
+            otlphttp/loki:
+              endpoint: http://loki.finflow-infra.svc.cluster.local:3100/otlp
               tls:
                 insecure: true
           service:
@@ -33,7 +46,10 @@ spec:
                 processors: [batch]
                 exporters: [otlp/jaeger]
               metrics: null
-              logs: null
+              logs:
+                receivers: [otlp]
+                processors: [batch]
+                exporters: [otlphttp/loki]
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: finflow-infra

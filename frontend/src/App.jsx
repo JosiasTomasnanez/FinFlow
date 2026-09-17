@@ -1,88 +1,93 @@
-import { useEffect, useState } from 'react'
-import Login from './Login'
+import { useEffect, useState } from 'react';
+import Login from './Login';
+import { logEvent } from './Logger';
 
-
-const BASE_URL = import.meta.env.VITE_API_URL || ''
+const BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const apiFetch = async (path, options = {}) => {
-  const response = await fetch(`${BASE_URL}${path}`, options)
-  const data = await response.json().catch(() => null)
+  const response = await fetch(`${BASE_URL}${path}`, options);
+  const data = await response.json().catch(() => null);
+
   if (!response.ok) {
-    throw new Error(data?.error || response.statusText)
+    const errorMessage = `Request error: ${path} - ${data?.error || response.statusText}`;
+    logEvent('ERROR', errorMessage, { status: response.status });
+    throw new Error(errorMessage);
   }
-  return data
-}
+
+  logEvent('INFO', `Request OK: ${path}`, { status: response.status });
+  return data;
+};
 
 function App() {
-  const [wallets, setWallets] = useState([])
-  const [owner, setOwner] = useState('alice')
-  const [initialBalance, setInitialBalance] = useState(1000)
-  const [createResult, setCreateResult] = useState('')
-  const [payment, setPayment] = useState({ from_wallet_id: '', to_wallet_id: '', amount: 100 })
-  const [paymentResult, setPaymentResult] = useState('')
-  const [featureEnabled, setFeatureEnabled] = useState(false)
-  const [user, setUser] = useState(null)
+  const [wallets, setWallets] = useState([]);
+  const [owner, setOwner] = useState('alice');
+  const [initialBalance, setInitialBalance] = useState(1000);
+  const [createResult, setCreateResult] = useState('');
+  const [payment, setPayment] = useState({ from_wallet_id: '', to_wallet_id: '', amount: 100 });
+  const [paymentResult, setPaymentResult] = useState('');
+  const [featureEnabled, setFeatureEnabled] = useState(false);
+  const [user, setUser] = useState(null);
 
   const loadFeatures = async () => {
     try {
-      const data = await apiFetch('/api/flags')
-      setFeatureEnabled(Boolean(data.feature_login))
+      const data = await apiFetch('/api/flags');
+      setFeatureEnabled(Boolean(data.feature_login));
     } catch (error) {
-      setFeatureEnabled(false)
+      setFeatureEnabled(false);
     }
-  }
+  };
 
   const loadWallets = async () => {
     try {
-      const data = await apiFetch('/api/wallets')
-      setWallets(data)
+      const data = await apiFetch('/api/wallets');
+      setWallets(data);
     } catch (error) {
-      setWallets([])
-      setCreateResult(`Error al cargar wallets: ${error.message}`)
+      setWallets([]);
+      setCreateResult(`Error al cargar wallets: ${error.message}`);
     }
-  }
+  };
 
   useEffect(() => {
-    loadFeatures()
-    loadWallets()
-  }, [])
+    loadFeatures();
+    loadWallets();
+  }, []);
 
   const handleCreateWallet = async (event) => {
-    event.preventDefault()
-    setCreateResult('Creando wallet...')
+    event.preventDefault();
+    setCreateResult('Creando wallet...');
 
     try {
       const wallet = await apiFetch('/api/wallets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ owner, initial_balance: Number(initialBalance) }),
-      })
-      setCreateResult(JSON.stringify(wallet, null, 2))
-      setOwner('')
-      setInitialBalance(1000)
-      loadWallets()
+      });
+      setCreateResult(JSON.stringify(wallet, null, 2));
+      setOwner('');
+      setInitialBalance(1000);
+      loadWallets();
     } catch (error) {
-      setCreateResult(`Error: ${error.message}`)
+      setCreateResult(`Error: ${error.message}`);
     }
-  }
+  };
 
   const handlePayment = async (event) => {
-    event.preventDefault()
-    setPaymentResult('Procesando pago...')
+    event.preventDefault();
+    setPaymentResult('Procesando pago...');
 
     try {
       const result = await apiFetch('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payment),
-      })
-      setPaymentResult(JSON.stringify(result, null, 2))
-      setPayment({ ...payment, amount: 100 })
-      loadWallets()
+      });
+      setPaymentResult(JSON.stringify(result, null, 2));
+      setPayment({ ...payment, amount: 100 });
+      loadWallets();
     } catch (error) {
-      setPaymentResult(`Error: ${error.message}`)
+      setPaymentResult(`Error: ${error.message}`);
     }
-  }
+  };
 
   return (
     <div className="page">
@@ -158,7 +163,7 @@ function App() {
         </section>
       </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

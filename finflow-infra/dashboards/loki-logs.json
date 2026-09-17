@@ -129,7 +129,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (pod) (quantile_over_time(0.95, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m])",
+          "expr": "sum by (pod) (quantile_over_time(0.95, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
           "legendFormat": "p95",
           "refId": "A"
         }
@@ -176,22 +176,22 @@
       },
       "targets": [
         {
-          "expr": "sum by (pod) (quantile_over_time(0.50, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m])",
+          "expr": "sum by (pod) (quantile_over_time(0.50, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
           "legendFormat": "p50 (Mediana)",
           "refId": "A"
         },
         {
-          "expr": "sum by (pod) (quantile_over_time(0.90, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m])",
+          "expr": "sum by (pod) (quantile_over_time(0.90, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
           "legendFormat": "p90",
           "refId": "B"
         },
         {
-          "expr": "sum by (pod) (quantile_over_time(0.95, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m])",
+          "expr": "sum by (pod) (quantile_over_time(0.95, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
           "legendFormat": "p95",
           "refId": "C"
         },
         {
-          "expr": "sum by (pod) (quantile_over_time(0.99, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m])",
+          "expr": "sum by (pod) (quantile_over_time(0.99, {k8s_namespace_name=~\"$namespace\", k8s_pod_name=~\"finflow-prod-app.*\"} | json | msg=\"http_request\" | unwrap latency_ms [5m]))",
           "legendFormat": "p99",
           "refId": "D"
         }
@@ -241,5 +241,5 @@
   "timezone": "browser",
   "title": "FinFlow - Logs (Loki)",
   "uid": "finflow-loki-logs",
-  "version": 4
+  "version": 5
 }

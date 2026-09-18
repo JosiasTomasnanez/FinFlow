@@ -40,7 +40,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Release.Name }}-jaeger
+                name: jaeger
                 port:
                   number: 16686
     {{- end }}

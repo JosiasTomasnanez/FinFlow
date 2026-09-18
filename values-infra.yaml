@@ -24,3 +24,5 @@ ingress:
     unleash: "unleash.finflow.local"
     grafana: "grafana.finflow.local"
     jaeger: "jaeger.finflow.local"
+  paths:
+    backendService: "otelcol-gateway-opentelemetry-collector"

@@ -20,15 +20,15 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.ingress.paths.backendService }}
+                name: {{ (index $.Values.ingress.paths 0).backendService }}
                 port:
                   number: 4318
           - path: /v1/logs
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.ingress.paths.backendService }}
+                name: {{ (index $.Values.ingress.paths 0).backendService }}
                 port:
                   number: 4318
-      {{- end }}
+    {{- end }}
 {{- end }}

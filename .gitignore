@@ -12,7 +12,7 @@
 #secrets & AWS config
 k3d-config.yaml
 .harbor-ip
-secrets/*.env
+secrets
 iam_policy.json
 master-sealed-secret-key.yaml
 .env

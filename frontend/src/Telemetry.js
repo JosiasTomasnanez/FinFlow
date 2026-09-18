@@ -11,6 +11,14 @@ import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic
 const OTEL_COLLECTOR_URL = import.meta.env.VITE_OTEL_COLLECTOR_URL || '';
 const BACKEND_URL = import.meta.env.VITE_API_URL || '';
 
+function getDomain(url) {
+    try {
+        return new URL(url).hostname;
+    } catch {
+        return url.replace(/https?:\/\//, '').split('/')[0];
+    }
+}
+
 export function initTelemetry() {
     const provider = new WebTracerProvider({
         resource: resourceFromAttributes({
@@ -30,12 +38,14 @@ export function initTelemetry() {
         contextManager: new ZoneContextManager(),
     });
 
+    const domain = getDomain(BACKEND_URL);
+
     registerInstrumentations({
         instrumentations: [
             new DocumentLoadInstrumentation(),
             new FetchInstrumentation({
                 propagateTraceHeaderCorsUrls: [
-                    new RegExp(`^${BACKEND_URL}.*`),
+                    new RegExp(`.*${domain}.*`),
                 ],
                 clearTimingResources: true,
             }),

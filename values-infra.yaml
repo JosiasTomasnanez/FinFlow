@@ -25,4 +25,11 @@ ingress:
     grafana: "grafana.finflow.local"
     jaeger: "jaeger.finflow.local"
   paths:
-    backendService: "otelcol-gateway-opentelemetry-collector"
+    - path: /v1/traces
+      pathType: Exact
+      backendService: "otelcol-gateway-opentelemetry-collector"
+      backendPort: 4318
+    - path: /v1/logs
+      pathType: Exact
+      backendService: "otelcol-gateway-opentelemetry-collector"
+      backendPort: 4318

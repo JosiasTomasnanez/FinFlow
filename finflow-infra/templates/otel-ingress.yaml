@@ -12,23 +12,32 @@ spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
   rules:
-    {{- range list "staging.finflow.local" "prod.finflow.local" }}
-    - host: {{ . | quote }}
+    - host: staging.finflow.local
       http:
         paths:
-          - path: /v1/traces
-            pathType: Prefix
+          {{- if .Values.ingress.paths }}
+          {{- range .Values.ingress.paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ (index $.Values.ingress.paths 0).backendService }}
+                name: {{ .backendService }}
                 port:
-                  number: 4318
-          - path: /v1/logs
-            pathType: Prefix
+                  number: {{ .backendPort }}
+          {{- end }}
+          {{- end }}
+    - host: prod.finflow.local
+      http:
+        paths:
+          {{- if .Values.ingress.paths }}
+          {{- range .Values.ingress.paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ (index $.Values.ingress.paths 0).backendService }}
+                name: {{ .backendService }}
                 port:
-                  number: 4318
-    {{- end }}
+                  number: {{ .backendPort }}
+          {{- end }}
+          {{- end }}
 {{- end }}

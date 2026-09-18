@@ -6,25 +6,26 @@ import (
 	"os"
 
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
-// InitTracer configura el TracerProvider global con el exportador OTLP gRPC.
+// InitTracer configura el TracerProvider global con el exportador OTLP HTTP.
 // Retorna una función de shutdown para vaciar los buffers antes de cerrar la app.
 func InitTracer(ctx context.Context, serviceName string) (func(context.Context) error, error) {
-	// Endpoint de Jaeger/OTel Collector, ej: "jaeger-collector:4317" o "localhost:4317"
+	// Endpoint HTTP del OTel Collector, ej: "otelcol-gateway:4318".
 	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
 	if endpoint == "" {
-		endpoint = "localhost:4317"
+		endpoint = "localhost:4318"
 	}
 
-	exporter, err := otlptracegrpc.New(ctx,
-		otlptracegrpc.WithEndpoint(endpoint),
-		otlptracegrpc.WithInsecure(),
+	exporter, err := otlptracehttp.New(ctx,
+		otlptracehttp.WithEndpoint(endpoint),
+		otlptracehttp.WithURLPath("/v1/traces"),
+		otlptracehttp.WithInsecure(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create OTLP trace exporter: %w", err)

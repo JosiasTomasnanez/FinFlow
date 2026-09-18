@@ -1,0 +1,37 @@
+{{- if and .Values.otelIngress .Values.otelIngress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-otel-isolated-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- if .Values.otelIngress.annotations }}
+    {{- toYaml .Values.otelIngress.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.otelIngress.className }}
+  ingressClassName: {{ .Values.otelIngress.className }}
+  {{- end }}
+  rules:
+    {{- $firstPath := index .Values.otelIngress.paths 0 }}
+    {{- $serviceName := $firstPath.backendService }}
+    {{- range .Values.otelIngress.hosts }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+          - path: /v1/traces
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: 4318
+          - path: /v1/logs
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: 4318
+    {{- end }}
+{{- end }}

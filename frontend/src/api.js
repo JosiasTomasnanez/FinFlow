@@ -11,7 +11,6 @@ export async function apiRequest(path, options = {}) {
   const response = await fetch(`${BASE_URL}${path}`, options);
   const data = await response.json().catch(() => null);
 
-  logEvent('INFO', `Calling apiRequest: ${path}`, { status: response.status });
   return { response, data };
 }
 

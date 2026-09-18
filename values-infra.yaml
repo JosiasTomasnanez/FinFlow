@@ -24,12 +24,20 @@ ingress:
     unleash: "unleash.finflow.local"
     grafana: "grafana.finflow.local"
     jaeger: "jaeger.finflow.local"
+    argocd: "argocd.finflow.local"
+
+otelIngress:
+  enabled: true
+  className: "traefik"
+  annotations:
+    traefik.ingress.kubernetes.io/router.priority: "4242"
+  hosts:
+    - "staging.finflow.local"
+    - "prod.finflow.local"
   paths:
-    - path: /v1/traces
-      pathType: Exact
-      backendService: "otelcol-gateway-opentelemetry-collector"
-      backendPort: 4318
-    - path: /v1/logs
-      pathType: Exact
-      backendService: "otelcol-gateway-opentelemetry-collector"
-      backendPort: 4318
+    - backendService: "otelcol-gateway-opentelemetry-collector"
+
+  argocdIngress:
+    enabled: true
+    className: "traefik"
+    host: "argocd.finflow.local"

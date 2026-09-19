@@ -34,6 +34,7 @@ func InitTracer(ctx context.Context, serviceName string) (func(context.Context) 
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
 			semconv.ServiceNameKey.String(serviceName),
+			semconv.DeploymentEnvironmentKey.String(os.Getenv("DEPLOY_ENV")),
 		),
 	)
 	if err != nil {

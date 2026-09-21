@@ -21,10 +21,8 @@ export default function ErrorsLab() {
       const { ok, total } = await runParallel(count, async () => {
         const { response } = await apiRequest('/api/lab/error', jsonPost({ code: 500 }));
         if (response.status < 500) {
-          logEvent('ERROR', errorMessage, { status: response.status });
           throw new Error(`status ${response.status}`);
         }
-        logEvent('INFO', `Error 500 lanzado`, { status: response.status });
       });
       setLog(`${ok}/${total} HTTP 5xx`);
     } catch (err) {

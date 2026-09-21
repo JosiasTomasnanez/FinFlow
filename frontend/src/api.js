@@ -59,14 +59,13 @@ export async function apiRequest(path, options = {}) {
     }
   }
 
-  return { response, data };
+  return { response, data, errorMessage };
 }
 
 export async function apiFetch(path, options = {}) {
-  const { response, data } = await apiRequest(path, options);
+  const { response, data, errorMessage } = await apiRequest(path, options);
 
   if (!response.ok) {
-    const errorMessage = `apiFetch error: ${path} - ${data?.error || response.statusText || 'Unknown error'}`;
     throw new Error(errorMessage);
   }
 

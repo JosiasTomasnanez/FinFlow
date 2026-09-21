@@ -49,13 +49,13 @@ export async function apiRequest(path, options = {}) {
       method: options.method ?? 'GET',
       path: path,
       status: errorOccurred ? 0 : response?.status ?? 500,
-      message: errorOccurred || !response?.ok ? `apiFetch KO: ${errorMessage}` : 'apiFetch OK'
+      msg: errorOccurred || !response?.ok ? `apiFetch KO: ${errorMessage}` : 'apiFetch OK'
     };
 
     if (errorOccurred || !response?.ok) {
-      logEvent('ERROR', 'http_request', logAttributes);
+      logEvent('ERROR', logAttributes);
     } else {
-      logEvent('INFO', 'http_request', logAttributes);
+      logEvent('INFO', logAttributes);
     }
   }
 

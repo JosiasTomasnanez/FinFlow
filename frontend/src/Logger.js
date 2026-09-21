@@ -9,17 +9,25 @@ function currentTraceContext() {
     return { trace_id: ctx.traceId, span_id: ctx.spanId };
 }
 
-export function logEvent(severity, message, attributes = {}) {
+export function logEvent(severity, attributes = {}) {
+    const service = 'finflow-frontend';
+    const jsonLogBody = {
+        level: severity,
+        service: service,
+        time: new Date().toISOString(),
+        ...attributes,
+        ...currentTraceContext() // Inyecta trace_id y span_id al mismo nivel
+    };
+
     const body = {
         resourceLogs: [{
-            resource: { attributes: [{ key: 'service.name', value: { stringValue: 'finflow-frontend' } }] },
+            resource: { attributes: [{ key: 'service.name', value: { stringValue: service } }] },
             scopeLogs: [{
                 logRecords: [{
                     timeUnixNano: String(Date.now() * 1e6),
                     severityText: severity,
-                    body: { stringValue: message },
-                    attributes: Object.entries({ ...attributes, ...currentTraceContext() })
-                        .map(([key, value]) => ({ key, value: { stringValue: String(value) } })),
+                    body: { stringValue: JSON.stringify(jsonLogBody) },
+                    attributes: []
                 }],
             }],
         }],

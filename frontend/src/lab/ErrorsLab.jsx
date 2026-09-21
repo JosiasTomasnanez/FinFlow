@@ -5,7 +5,6 @@ import TextField from '@mui/material/TextField';
 import { apiRequest, jsonPost } from '../api';
 import { runParallel } from './runParallel';
 import LabStation from './LabStation';
-import { logEvent } from '../Logger';
 
 export default function ErrorsLab() {
   const [count, setCount] = useState(10);

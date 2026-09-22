@@ -12,8 +12,6 @@ export function logEvent(severity, attributes = {}, span) {
         ...attributes,
     };
 
-    console.log('Logging event:', jsonLogBody);
-
     const body = {
         resourceLogs: [{
             resource: { attributes: [{ key: 'service.name', value: { stringValue: service } }] },

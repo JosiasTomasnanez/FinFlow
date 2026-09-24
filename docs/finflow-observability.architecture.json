@@ -1,0 +1,298 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "FinFlow — Arquitectura de Observabilidad",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "users",
+      "type": "external",
+      "label": "Usuarios",
+      "sublabel": "navegador",
+      "pos": [
+        40,
+        120
+      ],
+      "size": [
+        110,
+        58
+      ]
+    },
+    {
+      "id": "frontend",
+      "type": "frontend",
+      "label": "Frontend",
+      "sublabel": "React SPA",
+      "pos": [
+        230,
+        120
+      ],
+      "size": [
+        120,
+        58
+      ]
+    },
+    {
+      "id": "backend",
+      "type": "backend",
+      "label": "Backend",
+      "sublabel": "Go · Gin",
+      "pos": [
+        460,
+        120
+      ],
+      "size": [
+        120,
+        58
+      ]
+    },
+    {
+      "id": "postgres",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "persistencia",
+      "pos": [
+        680,
+        40
+      ],
+      "size": [
+        124,
+        58
+      ]
+    },
+    {
+      "id": "redis",
+      "type": "database",
+      "label": "Redis",
+      "sublabel": "cache",
+      "pos": [
+        680,
+        120
+      ],
+      "size": [
+        124,
+        58
+      ]
+    },
+    {
+      "id": "otel_gateway",
+      "type": "cloud",
+      "label": "OTel Collector",
+      "sublabel": "gateway OTLP",
+      "pos": [
+        230,
+        340
+      ],
+      "size": [
+        132,
+        58
+      ]
+    },
+    {
+      "id": "prometheus",
+      "type": "external",
+      "label": "Prometheus",
+      "sublabel": "métricas + cAdvisor",
+      "pos": [
+        460,
+        340
+      ],
+      "size": [
+        146,
+        58
+      ]
+    },
+    {
+      "id": "loki",
+      "type": "external",
+      "label": "Loki",
+      "sublabel": "logs",
+      "pos": [
+        80,
+        480
+      ],
+      "size": [
+        110,
+        58
+      ]
+    },
+    {
+      "id": "jaeger",
+      "type": "external",
+      "label": "Jaeger",
+      "sublabel": "trazas",
+      "pos": [
+        230,
+        480
+      ],
+      "size": [
+        110,
+        58
+      ]
+    },
+    {
+      "id": "grafana",
+      "type": "external",
+      "label": "Grafana",
+      "sublabel": "4 Golden Signals",
+      "pos": [
+        460,
+        620
+      ],
+      "size": [
+        146,
+        58
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "FinFlow · clúster K3D",
+      "wraps": [
+        "frontend",
+        "backend",
+        "postgres",
+        "redis"
+      ],
+      "pad": 20
+    },
+    {
+      "kind": "region",
+      "label": "Observabilidad",
+      "wraps": [
+        "otel_gateway",
+        "prometheus",
+        "loki",
+        "jaeger",
+        "grafana"
+      ],
+      "pad": 20
+    }
+  ],
+  "connections": [
+    {
+      "from": "users",
+      "to": "frontend",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "from": "frontend",
+      "to": "backend",
+      "label": "REST · traceparent",
+      "variant": "emphasis"
+    },
+    {
+      "from": "backend",
+      "to": "postgres",
+      "label": "SQL",
+      "route": "orthogonal-h"
+    },
+    {
+      "from": "backend",
+      "to": "redis",
+      "label": "cache",
+      "route": "straight",
+      "labelDx": 25
+    },
+    {
+      "from": "backend",
+      "to": "prometheus",
+      "label": "scrape /metrics",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24,
+      "labelDx": -60
+    },
+    {
+      "from": "frontend",
+      "to": "otel_gateway",
+      "label": "OTLP traces · logs",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "from": "backend",
+      "to": "otel_gateway",
+      "label": "OTLP",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "otel_gateway",
+      "to": "loki",
+      "label": "logs",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDx": -28
+    },
+    {
+      "from": "otel_gateway",
+      "to": "jaeger",
+      "label": "trazas",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDx": 40
+    },
+    {
+      "from": "prometheus",
+      "to": "grafana",
+      "label": "métricas",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "from": "loki",
+      "to": "grafana",
+      "label": "logs",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "jaeger",
+      "to": "grafana",
+      "label": "trazas",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Los 3 pilares",
+      "items": [
+        "Métricas: Prometheus + cAdvisor",
+        "Logs: JSON en Loki · trazas en Jaeger"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Correlación",
+      "items": [
+        "request_id une front y back",
+        "traceparent une toda la traza"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Entrega SRE",
+      "items": [
+        "Golden Signals como código",
+        "Postmortem blameless + lab /lab"
+      ]
+    }
+  ]
+}

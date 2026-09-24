@@ -1,5 +1,4 @@
 import { logEvent } from './Logger';
-import { trace, context } from '@opentelemetry/api';
 
 const BASE_URL = apiBase(import.meta.env.VITE_API_URL);
 
@@ -8,6 +7,7 @@ function apiBase(raw) {
   return value.replace(/\/api$/i, '');
 }
 
+// Función auxiliar para generar un request_id rápido en el Frontend para correlación
 function generateRequestId() {
   const bytes = new Uint8Array(16);
   window.crypto.getRandomValues(bytes);
@@ -17,9 +17,7 @@ function generateRequestId() {
 export async function apiRequest(path, options = {}) {
   const requestId = generateRequestId();
 
-  const tracer = trace.getTracer('finflow-frontend-tracer');
-  const span = tracer.startSpan(`HTTP ${options.method ?? 'GET'} ${path}`);
-
+  // Inyectamos un encabezado X-Request-ID para seguimiento en el backend
   const extendedOptions = {
     ...options,
     headers: {
@@ -34,10 +32,7 @@ export async function apiRequest(path, options = {}) {
   let errorMessage = '';
 
   try {
-    response = await context.with(
-      trace.setSpan(context.active(), span),
-      () => fetch(`${BASE_URL}${path}`, extendedOptions)
-    );
+    response = await fetch(`${BASE_URL}${path}`, extendedOptions);
     data = await response.json().catch(() => null);
 
     if (!response.ok) {
@@ -48,17 +43,20 @@ export async function apiRequest(path, options = {}) {
     errorMessage = err.message || 'Network Error';
     throw err;
   } finally {
+
     const logAttributes = {
       request_id: requestId,
       method: options.method ?? 'GET',
       path: path,
       status: errorOccurred ? 0 : response?.status ?? 500,
-      msg: errorOccurred || !response?.ok ? `apiFetch KO: ${errorMessage}` : 'apiFetch OK',
+      msg: errorOccurred || !response?.ok ? `apiFetch KO: ${errorMessage}` : 'apiFetch OK'
     };
 
-    logEvent(errorOccurred || !response?.ok ? 'ERROR' : 'INFO', logAttributes, span);
-
-    span.end();
+    if (errorOccurred || !response?.ok) {
+      logEvent('ERROR', logAttributes);
+    } else {
+      logEvent('INFO', logAttributes);
+    }
   }
 
   return { response, data, errorMessage };

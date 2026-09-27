@@ -75,7 +75,7 @@ Puntos a cubrir:
 
 ## 4. Logs estructurados y correlación
 
-> **PENDIENTE — Responsable: Maxi** (frontend) + **Josias** (backend/Loki)
+> **PENDIENTE — **Josias** (backend/Loki)
 
 Puntos a cubrir:
 - Logs JSON estructurados en el backend (`log/slog`) con `request_id` y `latency_ms`.
@@ -83,6 +83,70 @@ Puntos a cubrir:
 - **Correlación:** el frontend genera el `request_id` → lo envía por header `X-Request-ID` → el backend lo **reusa**.
 - Loki centraliza los logs de todos los pods (vía OTel collector agent).
 - *Evidencia:* captura de Loki mostrando logs de front y back con el mismo `request_id`.
+
+Esta sección se enfoca en el segundo mecanismo de correlación —el `request_id` a nivel de aplicación— y en el formato de los logs estructurados que emite el frontend.
+
+### 4.1. Formato de los logs estructurados (JSON) en Frontend
+
+Todo el logging del frontend pasa por una única función centralizada, `logEvent`, definida en `Logger.js`. Cada log se arma como un objeto JSON estructurado con los siguientes campos:
+
+- **`level`**: severidad del log (`INFO`, `ERROR`).
+- **`service`**: nombre del servicio emisor (`finflow-frontend`), fijo para todos los logs del frontend.
+- **`time`**: timestamp en formato ISO 8601.
+- **Atributos del evento**, específicos de cada llamada: `request_id`, `method`, `path`, `status` y `msg`.
+
+Este JSON (`jsonLogBody`) se envía al **Collector de OpenTelemetry**, mediante un POST HTTP al endpoint estándar de logs (`/v1/logs`), siguiendo el formato de exportación OTLP (`resourceLogs` → `scopeLogs` → `logRecords`):
+
+```javascript
+const body = {
+    resourceLogs: [{
+        resource: { attributes: [{ key: 'service.name', value: { stringValue: service } }] },
+        scopeLogs: [{
+            logRecords: [{
+                timeUnixNano: String(Date.now() * 1e6),
+                severityText: severity,
+                body: { stringValue: JSON.stringify(jsonLogBody) },
+                attributes: []
+            }],
+        }],
+    }],
+};
+```
+
+### 4.2. `request_id`: correlación a nivel de aplicación
+
+Independientemente del `trace_id` de OpenTelemetry, en el frontend se genera un identificador propio en cada request usando la API de Web Crypto:
+
+```javascript
+function generateRequestId() {
+  const bytes = new Uint8Array(16);
+  window.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+```
+
+Este `request_id` se envía en un header custom hacia el backend:
+
+```javascript
+headers: {
+  ...(options.headers ?? {}),
+  'X-Request-ID': requestId,
+}
+```
+
+y, como se vió en el punto anterior, se incluye también como atributo en cada log emitido (`request_id`). A diferencia del `trace_id` (que depende del SDK de OTel y de la propagación W3C), el `request_id` es una correlación de aplicación simple: alcanza con que el backend loguee el valor recibido en `X-Request-ID` para poder cruzar logs de frontend y backend de un mismo request, incluso en escenarios donde la traza de OTel no esté disponible. 
+
+De esta manera, cada log estructurado del frontend queda correlacionado con su request de aplicación (`request_id`).
+
+> El detalle de cómo se genera y propaga el `trace_id`/`span_id` (SDK de OTel, `FetchInstrumentation`, `ZoneContextManager`, header `traceparent`) se cubre en la sección 5.
+
+### 4.3. Evidencia de Logs y correlacion mediante `request_id`
+
+![Log generado visualizado en Loki](./capturas/logs_frontend_loki.png)
+*Figura 1: Log generado a partir de la petición originada en `finflow-frontend` hacia `finflow-backend` (`GET /api/wallets`, HTTP 200). El `request_id` se encuentra resaltado en amarillo.*
+
+![Log generado visualizado en Loki](./capturas/correlacion_logs_loki.png)
+*Figura 2: Correlación entre los logs de frontend y backend (apuntados por flecha en rojo) mediante `request_id` (resaltado en amarillo), que fueron generados a partir de la petición mostrada en la figura anterior.*
 
 ---
 

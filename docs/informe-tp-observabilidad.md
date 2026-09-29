@@ -183,7 +183,7 @@ El router de Gin se crea con `gin.New()` en lugar de `gin.Default()`, para reemp
 3. **Lo devuelve en la respuesta:** lo agrega al header de la respuesta HTTP, para que el frontend pueda loguear el mismo identificador.
 4. **Registra un único log por petición:** al terminar de procesarla, emite el log `http_request` con el método, la ruta, el estado y la latencia.
 
-El campo `trace_id` corresponde a la traza distribuida de OpenTelemetry y es el que vincula estos logs del backend con las trazas que se originan en el frontend. Su funcionamiento se explica en la sección 5.5.
+El campo `trace_id` corresponde a la traza distribuida de OpenTelemetry y es el que vincula estos logs del backend con las trazas que se originan en el frontend. Su funcionamiento se explica en la sección 5.4.
 
 ### 4.3. Evidencia de logs y correlación mediante `request_id`
 
@@ -267,7 +267,7 @@ Puntos clave de este formato:
 - `parentSpanId` arma la jerarquía: el span de servidor del backend tiene como padre al span de cliente que generó `FetchInstrumentation` en el navegador, formando la cascada que se ve en Jaeger.
 - A diferencia de los logs (donde el contenido va como texto embebido en un único campo `body.stringValue`), en las trazas cada dato relevante viaja como atributo estructurado (`attributes[]`), siguiendo las Semantic Conventions de OpenTelemetry (`http.method`, `http.route`, `http.status_code`). Eso es lo que le permite a Jaeger mostrar columnas y facetas de búsqueda sin tener que parsear texto libre.
 
-### 5.4. Traza distribuida de punta a punta
+### 5.4. Traza distribuida de punta a punta y correlación mediante `trace_id`
  
 El flujo de una traza completa (ej. el usuario crea una transferencia desde la app) es:
  
@@ -277,16 +277,9 @@ El flujo de una traza completa (ej. el usuario crea una transferencia desde la a
 4. El backend exporta ese span vía OTLP/HTTP al mismo Collector gateway, que lo reenvía a Jaeger junto con los spans del frontend.
 5. En Jaeger, al buscar por ese `trace_id`, el trace queda compuesto por el span del cliente (`finflow-frontend`) y el span del servidor (`finflow-backend`) como hijo, mostrando el salto completo navegador → backend.
 
-### 5.5. Correlación logs/trazas por `trace_id`
+Como el `trace_id` acompaña a la petición en todo su recorrido, también permite vincular las trazas con los logs. Mientras el `request_id` (sección 4) es un identificador propio de la aplicación, el `trace_id` lo genera OpenTelemetry: los spans del frontend y del backend lo comparten, y el backend lo incluye además en cada log (sección 4.2). Grafana aprovecha ese campo común: el datasource de Loki extrae el `trace_id` de cada línea de log y arma un enlace hacia Jaeger (`Loki → Jaeger`), y el datasource de Jaeger hace lo inverso, con una consulta a Loki filtrada por ese mismo `trace_id` (`Jaeger → Loki`). Así, desde un log se salta con un clic a su traza completa, y desde una traza se ven los logs asociados.
  
-La correlación logs↔trazas se resuelve en dos puntos:
- 
-- Backend → log: en `internal/logging/logging.go`, `WithRequestID` arma el logger de cada request y, si hay un span activo en el `context.Context` (el que abre `otelhttp` en `server.go`), agrega el campo `trace_id` (además del `request_id` propio de la sección 4) a todos los logs JSON de ese request.
-- Grafana → Data Links (`finflow-infra/templates/grafana-provisioning.yaml`): el datasource Loki define un `derivedField` que matchea `"trace_id":"([a-f0-9]+)"` en la línea de log y arma un link hacia el datasource Jaeger (`Loki → Jaeger`). De forma simétrica, el datasource Jaeger define `tracesToLogsV2` apuntando a Loki con una query armada (`{k8s_container_name="finflow-app"} | json | trace_id="$${__trace.traceId}"`), habilitando también el salto inverso (`Jaeger → Loki`).
-
-Esto permite, desde un log puntual en Loki, saltar con un clic al trace completo en Jaeger, y desde un trace en Jaeger, ver los logs asociados a ese mismo `trace_id`.
- 
-### 5.6. Evidencia de las trazas
+### 5.5. Evidencia de las trazas
 
 ![Traza distribuida completa en Jaeger](./capturas/trazas-jaeger.png)
 *Figura 6: Cascada distribuida completa generada a partir de la petición originada en `finflow-frontend` hacia `finflow-backend` (`GET /api/wallets`, HTTP 200), correlacionada con el mismo `trace_id` obtenido en el log.*

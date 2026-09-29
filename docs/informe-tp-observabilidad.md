@@ -279,8 +279,6 @@ El flujo de una traza completa (ej. el usuario crea una transferencia desde la a
 
 Como el `trace_id` acompaña a la petición en todo su recorrido, también permite vincular las trazas con los logs. Mientras el `request_id` (sección 4) es un identificador propio de la aplicación, el `trace_id` lo genera OpenTelemetry: los spans del frontend y del backend lo comparten, y el backend lo incluye además en cada log (sección 4.2). Grafana aprovecha ese campo común: el datasource de Loki extrae el `trace_id` de cada línea de log y arma un enlace hacia Jaeger (`Loki → Jaeger`), y el datasource de Jaeger hace lo inverso, con una consulta a Loki filtrada por ese mismo `trace_id` (`Jaeger → Loki`). Así, desde un log se salta con un clic a su traza completa, y desde una traza se ven los logs asociados.
  
-### 5.5. Evidencia de las trazas
-
 ![Traza distribuida completa en Jaeger](./capturas/trazas-jaeger.png)
 *Figura 6: Cascada distribuida completa generada a partir de la petición originada en `finflow-frontend` hacia `finflow-backend` (`GET /api/wallets`, HTTP 200), correlacionada con el mismo `trace_id` obtenido en el log.*
 

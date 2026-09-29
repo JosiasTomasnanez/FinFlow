@@ -77,9 +77,24 @@ Todo el logging del frontend pasa por una única función centralizada, `logEven
 - **`level`**: severidad del log (`INFO`, `ERROR`).
 - **`service`**: nombre del servicio emisor (`finflow-frontend`), fijo para todos los logs del frontend.
 - **`time`**: timestamp en formato ISO 8601.
-- **Atributos del evento**, específicos de cada llamada: `request_id`, `method`, `path`, `status` y `msg`.
+- **`request_id`, `method`, `path`, `status` y `msg`**: Atributos propio del evento.
 
-Este JSON (`jsonLogBody`) se envía al **Collector de OpenTelemetry**, mediante un POST HTTP al endpoint estándar de logs (`/v1/logs`), siguiendo el formato de exportación OTLP (`resourceLogs` → `scopeLogs` → `logRecords`):
+Un log real emitido por el frontend tiene esta forma:
+
+```json
+{
+  "level": "INFO",
+  "service": "finflow-frontend",
+  "time": "2026-09-28T21:45:34.372Z",
+  "request_id": "1d33e43aa648063a7a68a9fd12136fa7",
+  "method": "GET",
+  "path": "/api/wallets",
+  "status": 200,
+  "msg": "apiFetch OK"
+}
+```
+
+Este JSON se envía al **Collector de OpenTelemetry**, mediante un POST HTTP al endpoint estándar de logs (`/v1/logs`), siguiendo el formato de exportación OTLP (`resourceLogs` → `scopeLogs` → `logRecords`):
 
 ```javascript
 const body = {
@@ -89,7 +104,7 @@ const body = {
             logRecords: [{
                 timeUnixNano: String(Date.now() * 1e6),
                 severityText: severity,
-                body: { stringValue: JSON.stringify(jsonLogBody) },
+                body: { stringValue: JSON.stringify(jsonLogBody) }, <-- Log a enviar
                 attributes: []
             }],
         }],

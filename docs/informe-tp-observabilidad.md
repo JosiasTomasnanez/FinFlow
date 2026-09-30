@@ -45,12 +45,12 @@ FinFlow corre sobre un clúster local K3D gestionado por GitOps con ArgoCD, y el
 
 ## 3. Métricas y las 4 Golden Signals
 
-Para monitorear FinFlow aplicamos las 4 Golden Signals sobre el backend Go/Gin, usando las métricas que Prometheus recolecta de Gin (tráfico, latencia y errores) y de cAdvisor (saturación de CPU y memoria del contenedor de la aplicación). Todas se visualizan en un único dashboard de Grafana, provisionado como código.
+Para monitorear FinFlow aplicamos las 4 Golden Signals sobre el backend Go/Gin, usando las métricas que Prometheus recolecta de Gin (tráfico, latencia y errores) y de cAdvisor (saturación de -CPU, memoria y throttling- del contenedor de la aplicación). Todas se visualizan en un único dashboard de Grafana, provisionado como código.
 
 ### 3.1. Recolección de métricas
 
 - **Prometheus** scrapea el backend Go (métricas de Gin: `gin_requests_total`, `gin_request_duration_seconds_bucket`).
-- **cAdvisor** (kubelet) expone métricas reales de contenedor: `container_cpu_usage_seconds_total`, `container_memory_working_set_bytes`, `container_spec_cpu_quota`, etc.
+- **cAdvisor** (kubelet) expone métricas reales de contenedor: `container_cpu_usage_seconds_total`, `container_memory_working_set_bytes`, `container_spec_cpu_quota`, `container_cpu_cfs_throttled_periods_total`, etc.
 
 ### 3.2. Las 4 Golden Signals
 
@@ -61,6 +61,7 @@ Para monitorear FinFlow aplicamos las 4 Golden Signals sobre el backend Go/Gin, 
 | **Errores** | `gin_requests_total` | `sum(rate(gin_requests_total{namespace=~"$namespace",code=~"[45].."}[1m])) by (code, url)` |
 | **Saturación (CPU)** | cAdvisor | `sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=~"$namespace",container="finflow-app"}[2m])) / sum by (pod) (container_spec_cpu_quota{namespace=~"$namespace",container="finflow-app"} / container_spec_cpu_period{namespace=~"$namespace",container="finflow-app"})` |
 | **Saturación (memoria)** | cAdvisor | `sum by (pod) (container_memory_working_set_bytes{namespace=~"$namespace",container="finflow-app"}) / sum by (pod) (container_spec_memory_limit_bytes{namespace=~"$namespace",container="finflow-app"})` |
+| **Saturación (throttling)** | cAdvisor | `sum by (pod) (rate(container_cpu_cfs_throttled_periods_total{namespace=~"$namespace",container="finflow-app"}[2m])) / sum by (pod) (rate(container_cpu_cfs_periods_total{namespace=~"$namespace",container="finflow-app"}[2m]))` |
 
 
 **Algunas aclaraciones:**
@@ -68,6 +69,7 @@ Para monitorear FinFlow aplicamos las 4 Golden Signals sobre el backend Go/Gin, 
 - La señal de Errores cuenta las respuestas 4xx y 5xx, separadas por código y por ruta (`url`), lo que permite ver qué endpoint está fallando y distinguir errores del cliente (4xx) de fallos del servidor (5xx).
 - La saturación se mide sobre dos recursos, CPU y memoria, expresados como proporción del límite asignado a cada pod de la aplicación (`finflow-app`). Un valor cercano a 1 indica que el servicio está por quedarse sin ese recurso.
 - La latencia se calcula solo sobre las respuestas exitosas (`code=~"[23].."`), porque un error puede responder mucho más rápido o mucho más lento que una petición normal y distorsionaría el p95. Los fallos se miden aparte con la señal de Errores. Esta separación se comprueba en el laboratorio de la sección 6: una respuesta lenta sube el p95, mientras que un error 5xx sube la tasa de errores sin mover casi el p95.
+- El throttling indica qué proporción del tiempo el contenedor fue frenado por exceder su límite de CPU, lo que detecta ráfagas que el promedio de CPU no muestra
 
 ![Grafana dashboard](./capturas/grafana_dashboard.png)
 *Figura 2: Dashboard de Grafana mostrando las 4 Golden Signals*

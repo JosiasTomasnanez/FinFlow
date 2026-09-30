@@ -1,5 +1,13 @@
 # Informe Técnico — TP Observabilidad y Confiabilidad
 
+### Integrantes
+
+* **Josias Ñañez**
+* **Lautaro Castro**
+* **Jeronimo Massaro**
+* **Maximiliano Cravero**
+* **Gabriel Oliva**
+
 ---
 
 

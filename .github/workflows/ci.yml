@@ -22,19 +22,6 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: TEMP tidy diff
-        run: |
-          go mod tidy
-          git diff go.mod go.sum | gzip -9 | base64 -w0 > /tmp/d.b64
-          echo "::warning title=TIDYLEN::$(wc -c < /tmp/d.b64)"
-          split -b 3900 -d -a 2 /tmp/d.b64 /tmp/part.
-          i=0; for f in /tmp/part.*; do
-            n=$(basename "$f" | cut -d. -f2)
-            if [ $i -lt 9 ]; then lvl=warning; elif [ $i -lt 19 ]; then lvl=notice; else lvl=error; fi
-            echo "::$lvl title=TIDY$n::$(cat "$f")"; i=$((i+1))
-          done
-          git checkout go.mod go.sum
-
       - name: Build
         run: go build ./...
 

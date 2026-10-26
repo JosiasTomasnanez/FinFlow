@@ -22,6 +22,13 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      - name: TEMP tidy diff
+        run: |
+          go mod tidy
+          git diff go.mod go.sum | gzip -9 | base64 -w0 > /tmp/d.b64
+          echo "::warning title=TIDY::$(cat /tmp/d.b64)"
+          git checkout go.mod go.sum
+
       - name: Build
         run: go build ./...
 

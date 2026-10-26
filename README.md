@@ -19,7 +19,7 @@ Proyecto integrador de la **Diplomatura en DevOps (FCEFyN, UNC)**. FinFlow es un
 | Red | `NetworkPolicy` por entorno para aislar base de datos y Redis. | `finflow-chart/templates/networkpolicy.yaml` |
 | Registry | **Harbor** privado (local, accesible por Tailscale) y **Amazon ECR** (AWS). | `argocd-infrastructure/argocd-config/app-harbor.yaml` |
 | AWS | EKS con **AWS Load Balancer Controller (ALB)**, **EBS CSI** (`gp3`) para volúmenes persistentes y ECR. Política IAM del controller incluida. | `values-*-aws.yaml`, `storageclass.yaml`, `iam_policy.json` |
-| Calidad y seguridad | Análisis estático con **SonarCloud** en cada push. En la etapa de staging sobre PaaS se ejecutó **OWASP ZAP baseline (DAST)**, que publicaba los hallazgos como issues ([#10](https://github.com/JosiasTomasnanez/FinFlow/issues/10) a [#14](https://github.com/JosiasTomasnanez/FinFlow/issues/14)). | `.github/workflows/sonar.yml` |
+| Calidad y seguridad | Análisis estático con **SonarCloud** en cada push. En la etapa de staging (backend en Render y frontend en Vercel) se ejecutó **OWASP ZAP baseline (DAST)**, que publicaba los hallazgos como issues ([#10](https://github.com/JosiasTomasnanez/FinFlow/issues/10) a [#14](https://github.com/JosiasTomasnanez/FinFlow/issues/14)). | `.github/workflows/sonar.yml` |
 
 ## Flujo de entrega (CI/CD + GitOps)
 
@@ -62,6 +62,6 @@ Nginx expone todo en `http://localhost`: `/` (frontend), `/api/*` (backend), `/g
 
 ## Equipo
 
-Proyecto grupal de la Diplomatura en DevOps (UNC): **Josias Tomas Ñañez**, Jerónimo Massaro, Maximiliano Cravero, Gabriel Oliva y Lautaro Castro.
+Proyecto grupal de la Diplomatura en DevOps (UNC): **Josias Tomas Ñañez**, Jerónimo Massaro, Maximiliano Cravero, Gabriel Oliva, Lautaro Castro y Marcos Reynoso, quien hizo el primer workflow de OWASP ZAP.
 
 Josias diseñó e implementó la mayor parte de la plataforma: charts de Helm, estructura de Argo CD, pipelines de GitHub Actions, configuración de AWS y Sealed Secrets.

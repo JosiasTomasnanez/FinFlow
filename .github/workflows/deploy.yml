@@ -20,20 +20,14 @@ env:
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
-  bypass-checks:
-    name: Prepare Environment
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Code validation bypass
-        run: echo "Saltando validaciones locales. El build real se ejecutará en los contenedores de Docker."
+  quality-gate:
+    name: Quality Gate
+    uses: ./.github/workflows/ci.yml
 
   build-and-push-ecr:
     name: Build & Push to Amazon ECR (Cloud)
     runs-on: ubuntu-latest
-    needs: bypass-checks
+    needs: quality-gate
 
     # --- DESACTIVADO TEMPORALMENTE ---
     # Se pone en 'false' para skipear la prueba en AWS mientras el clúster esté caído.
@@ -166,7 +160,7 @@ jobs:
   build-and-push-harbor:
     name: Build & Push to Harbor (Local)
     runs-on: self-hosted
-    needs: bypass-checks
+    needs: quality-gate
     timeout-minutes: 15
     continue-on-error: true
 

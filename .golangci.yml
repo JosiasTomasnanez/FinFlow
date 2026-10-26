@@ -1,15 +1,20 @@
+version: "2"
+
 run:
-  timeout: 2m
+  timeout: 3m
 
 linters:
   enable:
     - govet
     - staticcheck
-    - gofmt
     - ineffassign
     - unused
+    - errcheck
+
+formatters:
+  enable:
+    - gofmt
 
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0

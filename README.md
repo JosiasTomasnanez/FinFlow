@@ -19,13 +19,13 @@ Proyecto integrador de la **Diplomatura en DevOps (FCEFyN, UNC)**. FinFlow es un
 | Red | `NetworkPolicy` por entorno para aislar base de datos y Redis. | `finflow-chart/templates/networkpolicy.yaml` |
 | Registry | **Harbor** privado (local, accesible por Tailscale) y **Amazon ECR** (AWS). | `argocd-infrastructure/argocd-config/app-harbor.yaml` |
 | AWS | EKS con **AWS Load Balancer Controller (ALB)**, **EBS CSI** (`gp3`) para volúmenes persistentes y ECR. Política IAM del controller incluida. | `values-*-aws.yaml`, `storageclass.yaml`, `iam_policy.json` |
-| Calidad y seguridad | Análisis estático con **SonarCloud** en cada push. En la etapa de staging (backend en Render y frontend en Vercel) se ejecutó **OWASP ZAP baseline (DAST)**, que publicaba los hallazgos como issues ([#10](https://github.com/JosiasTomasnanez/FinFlow/issues/10) a [#14](https://github.com/JosiasTomasnanez/FinFlow/issues/14)). | `.github/workflows/sonar.yml` |
+| Calidad y seguridad | **Quality gate** en cada PR y antes de cada build (`ci.yml`): `go build`, `go vet`, **golangci-lint**, tests con race detector y cobertura, y build del frontend. Análisis estático con **SonarCloud** en cada push. En la etapa de staging (backend en Render y frontend en Vercel) se ejecutó **OWASP ZAP baseline (DAST)**, que publicaba los hallazgos como issues ([#10](https://github.com/JosiasTomasnanez/FinFlow/issues/10) a [#14](https://github.com/JosiasTomasnanez/FinFlow/issues/14)). | `.github/workflows/ci.yml`, `.github/workflows/sonar.yml` |
 
 ## Flujo de entrega (CI/CD + GitOps)
 
 ![Flujo GitOps](Diagramas/Diagrama%20gitops.jpg)
 
-1. Push a `main`: GitHub Actions construye las imágenes de backend y frontend y las publica en **Harbor** (runner self-hosted) y en **ECR**.
+1. Push a `main`: corre el quality gate (`ci.yml`) y, si pasa, GitHub Actions construye las imágenes de backend y frontend y las publica en **Harbor** (runner self-hosted) y en **ECR**.
 2. El mismo pipeline actualiza el tag de imagen en `values-staging*.yaml` con `yq` y commitea el cambio. Git es la única fuente de verdad.
 3. Argo CD detecta el commit y sincroniza staging.
 4. Tag `vX.Y.Z`: se actualizan los `values-prod*.yaml` y Argo Rollouts despliega la nueva versión en canary al 33% hasta la promoción manual.

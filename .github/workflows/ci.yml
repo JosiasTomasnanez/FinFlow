@@ -1,0 +1,58 @@
+name: CI - Quality Gate
+
+# Corre en cada PR y también como primer job del pipeline de deploy
+# (deploy.yml lo invoca con workflow_call): si algo falla, no se construyen
+# ni se publican imágenes.
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (Go) - build, vet, lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Lint (golangci-lint)
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.4.0
+
+      - name: Tests (race detector + coverage)
+        run: go test -race -coverprofile=coverage.out ./...
+
+      - name: Resumen de cobertura
+        run: go tool cover -func=coverage.out | tail -n 1 >> "$GITHUB_STEP_SUMMARY"
+
+  frontend:
+    name: Frontend (React/Vite) - build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm run build

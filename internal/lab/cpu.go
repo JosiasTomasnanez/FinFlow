@@ -1,6 +1,9 @@
 package lab
 
-import "time"
+import (
+	"runtime"
+	"time"
+)
 
 // Spin ocupa CPU de verdad (no sleep). El cgroup lo cuenta como uso y, si
 // el pico supera el quota CFS, como throttle.
@@ -10,8 +13,6 @@ func Spin(d time.Duration) {
 	for time.Now().Before(deadline) {
 		acc++
 	}
-	sink = acc
+	// KeepAlive evita que el compilador descarte el trabajo del loop.
+	runtime.KeepAlive(acc)
 }
-
-// sink evita que el compilador elimine el loop.
-var sink uint64
